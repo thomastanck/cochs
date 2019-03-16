@@ -1,0 +1,15 @@
+// Forall over * is what lets us write type constructors
+
+{\ NatT:*.
+
+// Then we assert existence of two objects that depend on this type
+// Effectively the type constructors themselves
+
+{\ succ:{\:NatT.NatT}.
+{\ zero:NatT.
+
+// Now we return the type
+
+NatT
+
+}}}

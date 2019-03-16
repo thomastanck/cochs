@@ -1,0 +1,9 @@
+// This represents two with type Nat
+
+(\ NatT:*.
+(\ succ:{\:NatT.NatT}.
+(\ zero:NatT.
+
+succ (succ zero)
+
+)))

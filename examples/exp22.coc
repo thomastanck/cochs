@@ -1,0 +1,53 @@
+/*
+(\ Nat:*.
+
+	(\ a:Nat.
+	(\ b:*.
+	a
+	))
+
+	(\ NatT:*.
+	(\ succ:{\:NatT.NatT}.
+	(\ zero:NatT.
+	zero
+	)))
+
+	Nat
+
+)
+
+{\ NatT:*.
+{\ succ:{\:NatT.NatT}.
+{\ zero:NatT.
+NatT
+}}}
+
+*/
+
+(\ Nat:*.
+
+	(\ a:Nat.
+	(\ b:Nat.
+	(\ NatT:*.
+	b {\:NatT.NatT} (a NatT)
+	)))
+
+	(\ NatT:*.
+	(\ succ:{\:NatT.NatT}.
+	(\ zero:NatT.
+	succ (succ zero)
+	)))
+
+	(\ NatT:*.
+	(\ succ:{\:NatT.NatT}.
+	(\ zero:NatT.
+	succ (succ zero)
+	)))
+
+)
+
+{\ NatT:*.
+{\ succ:{\:NatT.NatT}.
+{\ zero:NatT.
+NatT
+}}}

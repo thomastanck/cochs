@@ -1,0 +1,9 @@
+// This represents five with type Nat
+
+(\ NatT:*.
+(\ succ:{\:NatT.NatT}.
+(\ zero:NatT.
+
+succ (succ (succ (succ (succ zero))))
+
+)))
