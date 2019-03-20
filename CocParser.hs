@@ -32,7 +32,7 @@ parseCocSyntaxOne =
     <|> parseCocSyntaxType
     <|> parseCocSyntaxLambda
     <|> parseCocSyntaxForall
-    <|> parseCocParenthesised
+    <|> parseCocSyntaxParenthesised
     <|> parseCocSyntaxVariable
 
 parseCocSyntaxProp :: Parser CocSyntax
@@ -73,8 +73,8 @@ parseCocSyntaxForall = do
     symbol "}"
     return $ CocSyntaxForall param intype body
 
-parseCocParenthesised :: Parser CocSyntax
-parseCocParenthesised = do
+parseCocSyntaxParenthesised :: Parser CocSyntax
+parseCocSyntaxParenthesised = do
     symbol "("
     a <- parseCocSyntax
     symbol ")"
