@@ -49,29 +49,29 @@ parseCocApply :: Parser CocSyntax
 parseCocApply = do
     firstExpr <- parseCocSyntaxOne
     exprs <- some parseCocSyntaxOne
-    return $ foldr (\a b->CocApply b a Nothing) firstExpr (reverse exprs)
+    return $ foldr (\a b->CocApply b a) firstExpr (reverse exprs)
 
 parseCocLambda :: Parser CocSyntax
 parseCocLambda = do
     symbol "(\\"
-    param <- option (CocUnused Nothing) (parseCocUnused <|> parseCocVariable)
+    param <- option CocUnused (parseCocUnused <|> parseCocVariable)
     symbol ":"
     intype <- parseCocSyntax
     symbol "."
     body <- parseCocSyntax
     symbol ")"
-    return $ CocLambda param intype body Nothing
+    return $ CocLambda param intype body
 
 parseCocForall :: Parser CocSyntax
 parseCocForall = do
     symbol "{\\"
-    param <- option (CocUnused Nothing) (parseCocUnused <|> parseCocVariable)
+    param <- option CocUnused (parseCocUnused <|> parseCocVariable)
     symbol ":"
     intype <- parseCocSyntax
     symbol "."
     body <- parseCocSyntax
     symbol "}"
-    return $ CocForall param intype body Nothing
+    return $ CocForall param intype body
 
 parseCocParenthesised :: Parser CocSyntax
 parseCocParenthesised = do
@@ -83,7 +83,7 @@ parseCocParenthesised = do
 parseCocUnused :: Parser CocSyntax
 parseCocUnused = do
     symbol "_"
-    return $ CocUnused Nothing
+    return $ CocUnused
 
 rws :: [String] -- list of reserved words
 rws = ["Prop", "*", "Type", "@", "_"]
@@ -99,4 +99,4 @@ identifier = (lexeme . try) (p >>= check)
 parseCocVariable :: Parser CocSyntax
 parseCocVariable = do
     ident <- identifier
-    return $ CocVariable ident Nothing
+    return $ CocVariable ident
