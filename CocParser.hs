@@ -24,54 +24,54 @@ symbol = L.symbol sc
 parseCocSyntax :: Parser CocSyntax
 parseCocSyntax = do
     sc
-    (try parseCocApply) <|> parseCocSyntaxOne
+    (try parseCocSyntaxApply) <|> parseCocSyntaxOne
 
 parseCocSyntaxOne :: Parser CocSyntax
 parseCocSyntaxOne =
-    parseCocProp
-    <|> parseCocType
-    <|> parseCocLambda
-    <|> parseCocForall
+    parseCocSyntaxProp
+    <|> parseCocSyntaxType
+    <|> parseCocSyntaxLambda
+    <|> parseCocSyntaxForall
     <|> parseCocParenthesised
-    <|> parseCocVariable
+    <|> parseCocSyntaxVariable
 
-parseCocProp :: Parser CocSyntax
-parseCocProp = do
+parseCocSyntaxProp :: Parser CocSyntax
+parseCocSyntaxProp = do
     symbol "Prop" <|> symbol "*"
-    return CocProp
+    return CocSyntaxProp
 
-parseCocType :: Parser CocSyntax
-parseCocType = do
+parseCocSyntaxType :: Parser CocSyntax
+parseCocSyntaxType = do
     symbol "Type" <|> symbol "@"
-    return CocType
+    return CocSyntaxType
 
-parseCocApply :: Parser CocSyntax
-parseCocApply = do
+parseCocSyntaxApply :: Parser CocSyntax
+parseCocSyntaxApply = do
     firstExpr <- parseCocSyntaxOne
     exprs <- some parseCocSyntaxOne
-    return $ foldr (\a b->CocApply b a) firstExpr (reverse exprs)
+    return $ foldr (\a b->CocSyntaxApply b a) firstExpr (reverse exprs)
 
-parseCocLambda :: Parser CocSyntax
-parseCocLambda = do
+parseCocSyntaxLambda :: Parser CocSyntax
+parseCocSyntaxLambda = do
     symbol "(\\"
-    param <- option CocUnused (parseCocUnused <|> parseCocVariable)
+    param <- option CocSyntaxUnused (parseCocSyntaxUnused <|> parseCocSyntaxVariable)
     symbol ":"
     intype <- parseCocSyntax
     symbol "."
     body <- parseCocSyntax
     symbol ")"
-    return $ CocLambda param intype body
+    return $ CocSyntaxLambda param intype body
 
-parseCocForall :: Parser CocSyntax
-parseCocForall = do
+parseCocSyntaxForall :: Parser CocSyntax
+parseCocSyntaxForall = do
     symbol "{\\"
-    param <- option CocUnused (parseCocUnused <|> parseCocVariable)
+    param <- option CocSyntaxUnused (parseCocSyntaxUnused <|> parseCocSyntaxVariable)
     symbol ":"
     intype <- parseCocSyntax
     symbol "."
     body <- parseCocSyntax
     symbol "}"
-    return $ CocForall param intype body
+    return $ CocSyntaxForall param intype body
 
 parseCocParenthesised :: Parser CocSyntax
 parseCocParenthesised = do
@@ -80,10 +80,10 @@ parseCocParenthesised = do
     symbol ")"
     return a
 
-parseCocUnused :: Parser CocSyntax
-parseCocUnused = do
+parseCocSyntaxUnused :: Parser CocSyntax
+parseCocSyntaxUnused = do
     symbol "_"
-    return $ CocUnused
+    return $ CocSyntaxUnused
 
 rws :: [String] -- list of reserved words
 rws = ["Prop", "*", "Type", "@", "_"]
@@ -96,7 +96,7 @@ identifier = (lexeme . try) (p >>= check)
                 then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                 else return x
 
-parseCocVariable :: Parser CocSyntax
-parseCocVariable = do
+parseCocSyntaxVariable :: Parser CocSyntax
+parseCocSyntaxVariable = do
     ident <- identifier
-    return $ CocVariable ident
+    return $ CocSyntaxVariable ident
