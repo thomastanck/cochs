@@ -1,8 +1,8 @@
-module CocExpr where
+module CocSyntax where
 
 import Debug.Trace
 
-data CocExpr =
+data CocSyntax =
     -- Type of types
     -- e.g. CocForall (CocUnused) (CocVariable "A") (CocVariable "A")
     -- has type CocProp
@@ -10,17 +10,17 @@ data CocExpr =
     -- Type of CocProp
     | CocType
     -- Denotes a variable
-    | CocVariable { label :: String, type' :: Maybe CocExpr }
+    | CocVariable { label :: String, type' :: Maybe CocSyntax }
     -- Can be used in place of an variable if it is unused
-    | CocUnused { type' :: Maybe CocExpr }
+    | CocUnused { type' :: Maybe CocSyntax }
     -- Denotes an application
-    | CocApply { function :: CocExpr, argument :: CocExpr, type' :: Maybe CocExpr }
+    | CocApply { function :: CocSyntax, argument :: CocSyntax, type' :: Maybe CocSyntax }
     -- Creates a function abstraction
-    | CocLambda { param :: CocExpr, inType :: CocExpr,  body :: CocExpr, type' :: Maybe CocExpr }
+    | CocLambda { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax, type' :: Maybe CocSyntax }
     -- Creates a type abstraction
-    | CocForall { param :: CocExpr, inType :: CocExpr,  body :: CocExpr, type' :: Maybe CocExpr }
+    | CocForall { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax, type' :: Maybe CocSyntax }
 
-instance Eq CocExpr where
+instance Eq CocSyntax where
     (==) CocProp CocProp =
         True
     (==) CocType CocType =
@@ -41,7 +41,7 @@ instance Eq CocExpr where
     (==) _ _ =
         False
 
-instance Show CocExpr where
+instance Show CocSyntax where
     show (CocProp) = "*"
     show (CocType) = "@"
     show (CocVariable label type') = label -- ++ (maybe "" (\t -> ":" ++ (show t)) type')
@@ -50,7 +50,7 @@ instance Show CocExpr where
     show (CocLambda param inType body type') = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")" -- ++ (maybe "" (\t -> ":" ++ (show t)) type')
     show (CocForall param inType body type') = "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}" -- ++ (maybe "" (\t -> ":" ++ (show t)) type')
 
-withType :: CocExpr -> CocExpr -> CocExpr
+withType :: CocSyntax -> CocSyntax -> CocSyntax
 withType CocProp _ = CocProp
 withType CocType _ = CocType
 withType (CocVariable label Nothing) newType = (CocVariable label (Just newType))
@@ -70,7 +70,7 @@ typecheck newType t expr =
     else
         expr
 
-getType :: CocExpr -> CocExpr
+getType :: CocSyntax -> CocSyntax
 getType CocProp = CocType
 getType (CocVariable _ (Just t)) = t
 getType (CocUnused (Just t)) = t
@@ -81,7 +81,7 @@ getType _ = notype
 
 notype = CocVariable "notype" Nothing
 
-cocReplace :: CocExpr -> CocExpr -> CocExpr -> CocExpr
+cocReplace :: CocSyntax -> CocSyntax -> CocSyntax -> CocSyntax
 cocReplace (CocUnused _) _ body = body
 cocReplace variable replacement body
     | variable == body

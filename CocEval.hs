@@ -4,22 +4,22 @@ import Debug.Trace
 
 import Data.Maybe
 
-import CocExpr
+import CocSyntax
 
 data CocSettings = CocSettings { typeDepOnTerm :: Bool, termDepOnType :: Bool, typeDepOnType :: Bool }
 
-cocEval :: Int -> CocExpr -> (CocExpr, CocExpr)
+cocEval :: Int -> CocSyntax -> (CocSyntax, CocSyntax)
 cocEval systemNum expr =
     cocEval' (CocSettings termDepOnType typeDepOnTerm typeDepOnType) expr
     where typeDepOnTerm = systemNum `mod` 2 == 1
           termDepOnType = systemNum `div` 2 `mod` 2 == 1
           typeDepOnType = systemNum `div` 4 `mod` 2 == 1
 
-cocEval' :: CocSettings -> CocExpr -> (CocExpr, CocExpr)
+cocEval' :: CocSettings -> CocSyntax -> (CocSyntax, CocSyntax)
 cocEval' settings expr =
     cocEvalLoop settings expr (expr, CocUnused Nothing)
 
-cocEvalLoop :: CocSettings -> CocExpr -> (CocExpr, CocExpr) -> (CocExpr, CocExpr)
+cocEvalLoop :: CocSettings -> CocSyntax -> (CocSyntax, CocSyntax) -> (CocSyntax, CocSyntax)
 cocEvalLoop settings expr prevExpr =
     trace ("    >>>> " ++ (show expr))
         (case reduce settings expr of
@@ -35,14 +35,14 @@ rules = [
     -- propReduce
     ]
 
--- betaReduce :: CocSettings -> CocExpr -> Maybe (CocExpr, CocExpr)
+-- betaReduce :: CocSettings -> CocSyntax -> Maybe (CocSyntax, CocSyntax)
 -- betaReduce settings (CocApply (CocLambda param inType body) arg) =
 --     Just $ (fst $ cocEval' settings $ cocReplace param arg body,
 --             fst $ cocEval' settings $ cocReplace param inType body)
 -- betaReduce _ _ =
 --     Nothing
 
--- lambdaReduce :: CocSettings -> CocExpr -> Maybe (CocExpr, CocExpr)
+-- lambdaReduce :: CocSettings -> CocSyntax -> Maybe (CocSyntax, CocSyntax)
 -- lambdaReduce settings (CocLambda param inType body) =
 --     Just $ (CocLambda param inTypeVal bodyVal,
 --             CocForall param inTypeVal bodyType)
@@ -52,7 +52,7 @@ rules = [
 -- lambdaReduce _ _ =
 --     Nothing
 
--- forallReduce :: CocSettings -> CocExpr -> Maybe (CocExpr, CocExpr)
+-- forallReduce :: CocSettings -> CocSyntax -> Maybe (CocSyntax, CocSyntax)
 -- forallReduce settings (CocForall param inType body) =
 --     Just $ (CocForall param inTypeVal bodyVal,
 --             bodyType)
@@ -64,7 +64,7 @@ rules = [
 
 nonsense = CocVariable "lmaoooooooooooooo" (Just $ CocVariable "AHHAHAHA" Nothing)
 
-reduce :: CocSettings -> CocExpr -> Maybe (CocExpr, CocExpr)
+reduce :: CocSettings -> CocSyntax -> Maybe (CocSyntax, CocSyntax)
 reduce settings CocProp =
     Just $ (CocProp,
             CocType)

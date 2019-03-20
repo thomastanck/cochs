@@ -17,14 +17,14 @@ main = do
             input <- if filename == "-"
                 then getContents
                 else readFile filename
-            parseTest parseCocExpr input
+            parseTest parseCocSyntax input
         "eval":systemType:filename:_ -> do
             case readMaybe systemType :: Maybe Int of
                 Just systemNum -> do
                     input <- if filename == "-"
                         then getContents
                         else readFile filename
-                    case parse parseCocExpr filename input of
+                    case parse parseCocSyntax filename input of
                         Left err -> do
                             putStr $ errorBundlePretty err
                         Right expr ->

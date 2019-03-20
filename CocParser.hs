@@ -1,11 +1,11 @@
-module CocParser(parseCocExpr) where
+module CocParser(parseCocSyntax) where
 
 import Data.Void
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char as C
 import qualified Text.Megaparsec.Char.Lexer as L
 
-import CocExpr
+import CocSyntax
 
 type Parser = Parsec Void String
 
@@ -21,13 +21,13 @@ lexeme = L.lexeme sc
 symbol :: String -> Parser String
 symbol = L.symbol sc
 
-parseCocExpr :: Parser CocExpr
-parseCocExpr = do
+parseCocSyntax :: Parser CocSyntax
+parseCocSyntax = do
     sc
-    (try parseCocApply) <|> parseCocExprOne
+    (try parseCocApply) <|> parseCocSyntaxOne
 
-parseCocExprOne :: Parser CocExpr
-parseCocExprOne =
+parseCocSyntaxOne :: Parser CocSyntax
+parseCocSyntaxOne =
     parseCocProp
     <|> parseCocType
     <|> parseCocLambda
@@ -35,52 +35,52 @@ parseCocExprOne =
     <|> parseCocParenthesised
     <|> parseCocVariable
 
-parseCocProp :: Parser CocExpr
+parseCocProp :: Parser CocSyntax
 parseCocProp = do
     symbol "Prop" <|> symbol "*"
     return CocProp
 
-parseCocType :: Parser CocExpr
+parseCocType :: Parser CocSyntax
 parseCocType = do
     symbol "Type" <|> symbol "@"
     return CocType
 
-parseCocApply :: Parser CocExpr
+parseCocApply :: Parser CocSyntax
 parseCocApply = do
-    firstExpr <- parseCocExprOne
-    exprs <- some parseCocExprOne
+    firstExpr <- parseCocSyntaxOne
+    exprs <- some parseCocSyntaxOne
     return $ foldr (\a b->CocApply b a Nothing) firstExpr (reverse exprs)
 
-parseCocLambda :: Parser CocExpr
+parseCocLambda :: Parser CocSyntax
 parseCocLambda = do
     symbol "(\\"
     param <- option (CocUnused Nothing) (parseCocUnused <|> parseCocVariable)
     symbol ":"
-    intype <- parseCocExpr
+    intype <- parseCocSyntax
     symbol "."
-    body <- parseCocExpr
+    body <- parseCocSyntax
     symbol ")"
     return $ CocLambda param intype body Nothing
 
-parseCocForall :: Parser CocExpr
+parseCocForall :: Parser CocSyntax
 parseCocForall = do
     symbol "{\\"
     param <- option (CocUnused Nothing) (parseCocUnused <|> parseCocVariable)
     symbol ":"
-    intype <- parseCocExpr
+    intype <- parseCocSyntax
     symbol "."
-    body <- parseCocExpr
+    body <- parseCocSyntax
     symbol "}"
     return $ CocForall param intype body Nothing
 
-parseCocParenthesised :: Parser CocExpr
+parseCocParenthesised :: Parser CocSyntax
 parseCocParenthesised = do
     symbol "("
-    a <- parseCocExpr
+    a <- parseCocSyntax
     symbol ")"
     return a
 
-parseCocUnused :: Parser CocExpr
+parseCocUnused :: Parser CocSyntax
 parseCocUnused = do
     symbol "_"
     return $ CocUnused Nothing
@@ -96,7 +96,7 @@ identifier = (lexeme . try) (p >>= check)
                 then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                 else return x
 
-parseCocVariable :: Parser CocExpr
+parseCocVariable :: Parser CocSyntax
 parseCocVariable = do
     ident <- identifier
     return $ CocVariable ident Nothing
