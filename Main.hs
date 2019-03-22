@@ -30,7 +30,20 @@ main = do
                             putStr $ errorBundlePretty err
                         Right expr ->
                             putStrLn $ (show val) ++ "\n:\n" ++ (show typ)
-                            where (CocJudgement val typ) = cocEval systemNum (fromCocSyntax expr)
+                            where (CocJudgement [] val [] typ) = cocEval systemNum (fromCocSyntax expr)
+                Nothing -> do
+                    putStrLn "Invalid system type"
+        "findtype":systemType:filename:_ -> do
+            case readMaybe systemType :: Maybe Int of
+                Just systemNum -> do
+                    input <- if filename == "-"
+                        then getContents
+                        else readFile filename
+                    case parse parseCocSyntax filename input of
+                        Left err -> do
+                            putStr $ errorBundlePretty err
+                        Right expr ->
+                            putStrLn $ show (cocFindType (cocInitFindTypeState (systemNumToSettings systemNum)) (fromCocSyntax expr))
                 Nothing -> do
                     putStrLn "Invalid system type"
         _ -> putStrLn "Invalid action"
