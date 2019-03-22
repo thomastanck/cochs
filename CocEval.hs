@@ -19,12 +19,20 @@ asCocSort _ = Nothing
 data CocSettings = CocSettings { allowedSorts :: [(CocSort, CocSort)] }
     deriving (Eq, Show)
 
-data CocFTRule =
+data CocRule =
     CocFTRuleProp
     | CocFTRuleVar
     | CocFTRuleApply
     | CocFTRuleLambda { s1 :: CocSort, s2 :: CocSort }
     | CocFTRuleForall { s1 :: CocSort, s2 :: CocSort }
+    | CocTJPropC
+    | CocTJVarC
+    | CocTJWeak
+    | CocTJLambdaC { s1 :: CocSort, s2 :: CocSort }
+    | CocTJForallC { s1 :: CocSort, s2 :: CocSort }
+    deriving (Eq, Show)
+
+data CocState = CocState { rules :: [CocRule], context :: [CocExpr] }
     deriving (Eq, Show)
 
 data CocJudgement = CocJudgement { termContext :: [CocExpr], term :: CocExpr, typeContext :: [CocExpr], type' :: CocExpr }
@@ -51,9 +59,9 @@ traceme a = trace (show a) Just a
 
 checkEqual a b = if a == b then Just a else trace ((show a) ++ " != " ++ (show b)) Nothing
 
-extendFTS (FTS rules context) x = (FTS rules (x:context))
+extendCocState (CocState rules context) x = (CocState rules (x:context))
 
-ftsWithContext (FTS rules _) context = (FTS rules context)
+stateWithContext (CocState rules _) context = (CocState rules context)
 
 cocShift :: [CocExpr] -> [CocExpr] -> CocExpr -> CocExpr
 cocShift fromCtx toCtx expr = cocShift' ((length toCtx) - (length fromCtx)) expr
@@ -65,41 +73,41 @@ cocShift' shiftAmt (CocApply f a) = (CocApply (cocShift' shiftAmt f) (cocShift' 
 cocShift' shiftAmt (CocLambda l t b) = (CocLambda l (cocShift' shiftAmt t) (cocShift' shiftAmt b))
 cocShift' shiftAmt (CocForall l t b) = (CocForall l (cocShift' shiftAmt t) (cocShift' shiftAmt b))
 
-applyFTRule :: CocFindTypeState -> CocFTRule -> CocExpr -> Maybe CocJudgement
-applyFTRule fts (CocFTRuleProp) term
+applyFTRule :: CocState -> CocRule -> CocExpr -> Maybe CocJudgement
+applyFTRule state (CocFTRuleProp) term
     | (CocProp) <- term
-    , (FTS rules context) <- fts
+    , (CocState rules context) <- state
     = Just $ CocJudgement context term [] CocType
-applyFTRule fts (CocFTRuleVar) term
+applyFTRule state (CocFTRuleVar) term
     | (CocVariable index varlabel) <- term
-    , (FTS rules context) <- fts
+    , (CocState rules context) <- state
     = trace ("VAR " ++ (show context) ++ " " ++ (show varlabel) ++ (show index) ++ " = " ++ (show $ context !! index)) (do
         varType <- atMay context index
         return $ CocJudgement context term (drop (index+1) context) varType)
-applyFTRule fts (CocFTRuleApply) term
+applyFTRule state (CocFTRuleApply) term
     | (CocApply function argument) <- term
-    , (FTS rules context) <- fts
+    , (CocState rules context) <- state
     = do
         trace ("((((((( " ++ (show context) ++ " of " ++ (show term)) (Just term)
-        (CocJudgement _ _ typeContext functionType) <- cocFindType fts function
+        (CocJudgement _ _ typeContext functionType) <- cocFindType state function
         traceme functionType
         (CocForall _ inType body) <- asCocForall functionType
         traceme "hithere"
-        (CocJudgement _ _ _ argumentType) <- cocFindType fts argument
+        (CocJudgement _ _ _ argumentType) <- cocFindType state argument
         traceme inType
         traceme argumentType
         traceme $ checkEqual inType argumentType
         checkEqual inType argumentType
         return $ CocJudgement context term (inType:typeContext) body
-applyFTRule fts (CocFTRuleLambda s1 s2) term
+applyFTRule state (CocFTRuleLambda s1 s2) term
     | (CocLambda label inType body) <- term
-    , (FTS rules context) <- fts
+    , (CocState rules context) <- state
     = do
         trace (">>> " ++ (show context) ++ " of " ++ (show term)) (Just body)
         trace (show s1) (Just body)
         trace (show s2) (Just body)
         traceme (CocLambda label inType body)
-        (CocJudgement _ _ _ inTypeType) <- cocFindType fts inType
+        (CocJudgement _ _ _ inTypeType) <- cocFindType state inType
         trace (show s1) (Just body)
         trace (show s2) (Just body)
         traceme inType
@@ -109,10 +117,10 @@ applyFTRule fts (CocFTRuleLambda s1 s2) term
         trace (show s1) (Just body)
         trace (show s2) (Just body)
         traceme inTypeSort
-        (CocJudgement _ _ bodyTypeContext bodyType) <- cocFindType (extendFTS fts inType) body
+        (CocJudgement _ _ bodyTypeContext bodyType) <- cocFindType (extendCocState state inType) body
         traceme "--------1"
         traceme bodyType
-        (CocJudgement _ _ _ bodyTypeType) <- cocFindType (ftsWithContext fts bodyTypeContext) bodyType
+        (CocJudgement _ _ _ bodyTypeType) <- cocFindType (stateWithContext state bodyTypeContext) bodyType
         traceme "--------2"
         traceme term
         traceme bodyType
@@ -126,27 +134,24 @@ applyFTRule fts (CocFTRuleLambda s1 s2) term
         traceme bodyTypeSort
         checkEqual bodyTypeSort s2
         return $ CocJudgement context term context (CocForall label inType (cocShift' 1 (cocShift bodyTypeContext context bodyType)))
-applyFTRule fts (CocFTRuleForall s1 s2) term
+applyFTRule state (CocFTRuleForall s1 s2) term
     | (CocForall _ inType body) <- term
-    , (FTS rules context) <- fts
+    , (CocState rules context) <- state
     = do
         trace ("}}}}}}} " ++ (show term)) (Just 1)
-        (CocJudgement _ _ _ inTypeType) <- cocFindType fts inType
+        (CocJudgement _ _ _ inTypeType) <- cocFindType state inType
         inTypeSort <- asCocSort inTypeType
         checkEqual inTypeSort s1
-        (CocJudgement _ _ _ bodyType) <- cocFindType (extendFTS fts inType) body
+        (CocJudgement _ _ _ bodyType) <- cocFindType (extendCocState state inType) body
         bodySort <- asCocSort bodyType
         checkEqual bodySort s2
         return $ CocJudgement context term context bodyType
 applyFTRule _ _ _
     = Nothing
 
-data CocFindTypeState = FTS { rules :: [CocFTRule], context :: [CocExpr] }
-    deriving (Eq, Show)
-
-cocInitFindTypeState :: CocSettings -> CocFindTypeState
-cocInitFindTypeState (CocSettings allowedSorts)
-    = FTS
+cocInitState :: CocSettings -> CocState
+cocInitState (CocSettings allowedSorts)
+    = CocState
         ([CocFTRuleProp,
           CocFTRuleVar,
           CocFTRuleApply]
@@ -154,12 +159,12 @@ cocInitFindTypeState (CocSettings allowedSorts)
         )
         []
 
-cocFindType :: CocFindTypeState -> CocExpr -> Maybe CocJudgement
-cocFindType fts expr
-    | FTS rules context <- fts
+cocFindType :: CocState -> CocExpr -> Maybe CocJudgement
+cocFindType state expr
+    | CocState rules context <- state
     = atMay (do
     rule <- rules
-    judgement <- maybeToList $ applyFTRule fts rule expr
+    judgement <- maybeToList $ applyFTRule state rule expr
     trace "Hiiiiiiiiiiiiiiiiiiii" [1]
     trace (show judgement) [1]
     return judgement) 0

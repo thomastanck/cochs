@@ -43,7 +43,7 @@ main = do
                         Left err -> do
                             putStr $ errorBundlePretty err
                         Right expr ->
-                            putStrLn $ show (cocFindType (cocInitFindTypeState (systemNumToSettings systemNum)) (fromCocSyntax expr))
+                            putStrLn $ show (cocFindType (cocInitState (systemNumToSettings systemNum)) (fromCocSyntax expr))
                 Nothing -> do
                     putStrLn "Invalid system type"
         _ -> putStrLn "Invalid action"
