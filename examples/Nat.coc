@@ -1,15 +1,12 @@
-// Forall over * is what lets us write type constructors
+// Naturals that use church encoding
+// basically capture the idea of repeated function composition
 
+// We need to quantify over the domain that we're composing over
 {\ NatT:*.
 
-// Then we assert existence of two objects that depend on this type
-// Effectively the type constructors themselves
+// Now we encode the meaning of "natural number", that is,
+// it takes in a function over this domain
+// and returns a function and returns a function over this domain.
+(NatT->NatT)->(NatT->NatT)
 
-{\ succ:{\:NatT.NatT}.
-{\ zero:NatT.
-
-// Now we return the type
-
-NatT
-
-}}}
+}
