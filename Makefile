@@ -15,6 +15,7 @@ test: FORCE
 	./Main eval 7 examples/deftest.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/contextmixing.coc | grep "^Right " > /dev/null
 
+	./Main eval 7 examples/succ.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/add.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/exp.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/exp22.coc | grep "^Right " > /dev/null
@@ -25,10 +26,19 @@ test: FORCE
 	./Main eval 7 examples/three.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/four.coc | grep "^Right " > /dev/null
 	./Main eval 7 examples/five.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/pred.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/predzero.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/predone.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/predtwo.coc | grep "^Right " > /dev/null
+
+	./Main eval 7 examples/pair.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/head.coc | grep "^Right " > /dev/null
+	./Main eval 7 examples/tail.coc | grep "^Right " > /dev/null
 
 	./Main eval 7 examples/break.coc | grep "^Left " > /dev/null
 	./Main eval 7 examples/break2.coc | grep "^Left " > /dev/null
 
+	./Main eval 7 examples/oneequalspredtwo.coc | grep "^Right " > /dev/null
 	./Main checktype 7 examples/proofreflexivityofequality.coc examples/propositionreflexivityofequality.coc | grep "==" > /dev/null
 	./Main checktype 7 examples/proofsymmetryofequality.coc examples/propositionsymmetryofequality.coc | grep "==" > /dev/null
 	./Main checktype 7 examples/prooftransitivityofequality.coc examples/propositiontransitivityofequality.coc | grep "==" > /dev/null
