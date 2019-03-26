@@ -1,28 +1,12 @@
+define equality =
+(\type:*.(\obj1:type.(\obj2:type.
+{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+)));
+
 {\A:*.
 {\a:A.
 
-// We want to write
-//   (equality A a a)
-// But we need to inline the equality
-
-(
-
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-
-A a a
-
-)
+(equality A a a)
 
 }
 }

@@ -1,3 +1,8 @@
+define Nat =
+{\NatT:*.
+{\:{\:NatT.NatT}.{\:NatT.NatT}}
+};
+
 // This adds two Nats together.
 
 (\ a:Nat.
@@ -7,7 +12,7 @@
 (\ succ:{\:NatT.NatT}.
 (\ zero:NatT.
 
-a succ (b succ zero)
+a NatT succ (b NatT succ zero)
 
 )))
 

@@ -1,42 +1,15 @@
+define equality =
+(\type:*.(\obj1:type.(\obj2:type.
+{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+)));
+
 (\A:*.
 (\a:A.
 (\b:A.
 (\c:A.
 
-// (equality A a b)
-// (equality A b c)
-
-(\proofthataequalb:(
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-A a b
-).
-
-(\proofthatbequalc:(
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-A b c
-).
+(\proofthataequalb:(equality A a b).
+(\proofthatbequalc:(equality A b c).
 
 // We want to output something of type
 //    (equality A a c)
@@ -45,12 +18,12 @@ A b c
 
 (\z:{\_:A.*}.
 (\p:(z a).
+// So this should be of type (z c)
 (proofthatbequalc z (proofthataequalb z p))
 )
 )
 
 )
-
 )
 
 )

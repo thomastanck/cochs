@@ -1,5 +1,12 @@
 // see inter.coc and subset.coc
 
+define inter =
+(\A0:*.(\propclass:{\proposition:{\_:A0.*}.*}.(\term:A0.
+{\P:{\_:A0.*}.{\arbitraryprop:(propclass P).
+(P term)
+}}
+)));
+
 // The following term has type
 // {\A0:*.
 // {\propclass:{\prop:{\_:A0.*}.*}.
@@ -26,37 +33,7 @@
 //         proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
 //     )
 
-(\proofthattermsatisfiesprop1:(
-		// inter =
-		(\A0:*.
-
-		(\propclass:{\proposition:{\_:A0.*}.*}.
-		(\term:A0.
-
-		// This is the type we want to be inhabited
-		// iff term satisfies the proposition (inter propclass),
-		// which means we want this type to be inhabited
-		// iff forall P,
-		//   (P satisfies propclass) => (term satisfies P).
-
-		// Here's the forall P,
-		{\P:{\_:A0.*}.
-
-		// if P is in propclass
-		{\arbitraryprop:(propclass P).
-
-		// then term satisfies P
-		(P term)
-
-		}
-		}
-
-		)
-		)
-
-		)
-
-		A0 propclass term).
+(\proofthattermsatisfiesprop1:(inter A0 propclass term).
     proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
 )
 

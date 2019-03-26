@@ -1,0 +1,24 @@
+// see proofthatinterissubset
+
+define inter =
+(\A0:*.(\propclass:{\proposition:{\_:A0.*}.*}.(\term:A0.
+{\P:{\_:A0.*}.{\arbitraryprop:(propclass P).
+(P term)
+}}
+)));
+
+define subset =
+(\A0:*.(\prop1:{\_:A0.*}.(\prop2:{\_:A0.*}.
+{\testproof:A0.{\_:(prop1 testproof).
+(prop2 testproof)
+}}
+)));
+
+{\A0:*.
+{\propclass:{\prop:{\_:A0.*}.*}.
+{\prop:{\_:A0.*}.
+{\proofthatpropisinpropclass:(propclass prop).
+
+(subset A0 (inter A0 propclass) prop)
+
+}}}}

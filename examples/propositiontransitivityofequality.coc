@@ -1,62 +1,17 @@
+define equality =
+(\type:*.(\obj1:type.(\obj2:type.
+{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+)));
+
+
 {\A:*.
 {\a:A.
 {\b:A.
 {\c:A.
 
-// {\_:(equality A a b).
-// {\_:(equality A b c).
-// (equality A a c)
-// }
-// }
-
-{\_:(
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-A a b
-).
-
-{\_:(
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-A b c
-).
-
-(
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-A a c
-)
-
+{\_:(equality A a b).
+{\_:(equality A b c).
+	(equality A a c)
 }
 }
 

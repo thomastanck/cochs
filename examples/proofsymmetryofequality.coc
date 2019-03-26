@@ -1,24 +1,18 @@
+define equality =
+(\type:*.(\obj1:type.(\obj2:type.
+{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+)));
+
+define reflexivity =
+(\A:*.(\a:A.
+(\z:{\_:A.*}.(\p:(z a).p))
+));
+
 (\A:*.
 (\a:A.
 (\b:A.
 
-(\proofthataequalb:(
-
-// equality =
-(\type:*.
-(\obj1:type.
-(\obj2:type.
-
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
-}
-
-)
-)
-)
-
-A a b
-).
+(\proofthataequalb:(equality A a b).
 
 (
 
@@ -28,24 +22,7 @@ A a b
 
 	// This thing below takes in a value X and turns it into a type that represents X = a
 
-	(\X:A.(
-
-	// equality =
-	(\type:*.
-	(\obj1:type.
-	(\obj2:type.
-
-	{\z:{\_:type.*}.
-	{\_:(z obj1).(z obj2)}
-	}
-
-	)
-	)
-	)
-
-	A X a
-
-	))
+	(\X:A.(equality A X a))
 
 )
 
@@ -54,10 +31,7 @@ A a b
 
 // So we give it a proof that a = a...
 
-// reflexivity A a =
-(\z:{\_:A.*}.
-(\p:(z a).p)
-)
+(reflexivity A a)
 
 // And now we should have a proof that b = a.
 
