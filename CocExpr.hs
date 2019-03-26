@@ -39,13 +39,21 @@ instance Eq CocExpr where
     (==) _ _ =
         False
 
+isArrowExpr (CocForall "_" _ _) = True
+isArrowExpr _ = False
+
 instance Show CocExpr where
     show (CocProp) = "*"
     show (CocType) = "@"
     show (CocVariable index label) = label ++ (show index)
     show (CocApply f a) = "(" ++ (show f) ++ " " ++ (show a) ++ ")"
     show (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ ")"
-    show (CocForall p t b) = "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
+    show (CocForall p t b)
+        = if p == "_"
+            then if isArrowExpr t
+                then "(" ++ (show t) ++ ")->" ++ (show b)
+                else (show t) ++ "->" ++ (show b)
+            else "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
 
 fromCocProgram :: (CocSyntax, [CocSyntax]) -> CocExpr
 fromCocProgram (expr,defs) = fromCocSyntax (fromCocDefs defs) expr

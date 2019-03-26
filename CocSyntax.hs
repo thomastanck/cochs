@@ -21,6 +21,10 @@ data CocSyntax =
     | CocSyntaxForall { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax }
     -- Creates a definition binding
     | CocSyntaxDefine { defname :: String, expr :: CocSyntax }
+    deriving Eq
+
+isArrowSyntax (CocSyntaxForall CocSyntaxUnused _ _) = True
+isArrowSyntax _ = False
 
 instance Show CocSyntax where
     show (CocSyntaxProp) = "*"
@@ -29,6 +33,11 @@ instance Show CocSyntax where
     show (CocSyntaxUnused) = "_"
     show (CocSyntaxApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
     show (CocSyntaxLambda param inType body) = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
-    show (CocSyntaxForall param inType body) = "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
+    show (CocSyntaxForall param inType body)
+        = if isArrowSyntax param
+            then if isArrowSyntax inType
+                then "(" ++ (show inType) ++ ")->" ++ (show body)
+                else (show inType) ++ "->" ++ (show body)
+            else "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
     show (CocSyntaxDefine defname expr) = "define " ++ defname ++ " = " ++ (show expr)
 

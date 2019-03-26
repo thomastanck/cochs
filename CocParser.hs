@@ -24,7 +24,9 @@ symbol = L.symbol sc
 parseCocSyntax :: Parser CocSyntax
 parseCocSyntax = do
     sc
-    (try parseCocSyntaxApply) <|> parseCocSyntaxOne
+    (try parseCocSyntaxApply)
+    <|> (try parseCocSyntaxArrowForall)
+    <|> parseCocSyntaxOne
 
 parseCocProgram :: Parser (CocSyntax, [CocSyntax])
 parseCocProgram = do
@@ -81,6 +83,13 @@ parseCocSyntaxForall = do
     symbol "}"
     return $ CocSyntaxForall param intype body
 
+parseCocSyntaxArrowForall :: Parser CocSyntax
+parseCocSyntaxArrowForall = do
+    intype <- parseCocSyntaxOne
+    symbol "->"
+    outtype <- parseCocSyntax
+    return $ CocSyntaxForall CocSyntaxUnused intype outtype
+
 parseCocSyntaxParenthesised :: Parser CocSyntax
 parseCocSyntaxParenthesised = do
     symbol "("
@@ -94,7 +103,7 @@ parseCocSyntaxUnused = do
     return $ CocSyntaxUnused
 
 rws :: [String] -- list of reserved words
-rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";"]
+rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";", "->"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
