@@ -9,9 +9,9 @@ data CocSort =
     | CocSortType
     deriving (Eq, Show)
 
-asCocSort CocProp = Just CocSortProp
-asCocSort CocType = Just CocSortType
-asCocSort _ = Nothing
+asCocSort CocProp _ = Right CocSortProp
+asCocSort CocType _ = Right CocSortType
+asCocSort _ err = Left err
 
 data CocSettings = CocSettings { allowedSorts :: [(CocSort, CocSort)] }
     deriving (Eq, Show)
@@ -67,32 +67,64 @@ cocOpen index expr
         CocLambda label inType body -> CocLambda label (cocOpen index inType) (cocOpen (index+1) body)
         CocForall label inType body -> CocForall label (cocOpen index inType) (cocOpen (index+1) body)
 
+data CocError
+    = CocTypeMismatch { expr :: CocExpr, expectedType :: CocType, gotType :: CocType }
+    | CocTypeHasNoType
+    | CocVariableNotBound { index :: Int, label :: String }
+    | CocNotSortError { expr :: CocExpr, type' :: CocType }
+    | CocNonFunctionApplication { expr :: CocExpr, type' :: CocType }
+
+instance Show CocError where
+    show (CocTypeMismatch expr expectedType gotType)
+        = "Type mismatch in expression: "
+        ++ (show expr)
+        ++ "\nExpected type: "
+        ++ (show expectedType)
+        ++ "\nGot type: "
+        ++ (show gotType)
+    show (CocTypeHasNoType)
+        = "Tried to obtain type of Type, but Type has no type."
+    show (CocVariableNotBound index label)
+        = "Tried to find type of variable " ++ label ++ ", but it is not bound."
+    show (CocNotSortError expr type')
+        = "Expected " ++ (show expr) ++ " to be a type, but its type is " ++ (show type') ++ "which is not a valid sort."
+    show (CocNonFunctionApplication expr type')
+        = "Expected " ++ (show expr) ++ " to be a function (aka have a Forall type), but its type is " ++ (show type') ++ " which is not a Forall type."
+
 -- Finds the type of an expr in a given context
-cocType :: CocSettings -> CocContext -> CocExpr -> Maybe CocExpr
+cocType :: CocSettings -> CocContext -> CocExpr -> Either CocError CocExpr
 cocType settings ctx expr
     | CocSettings allowedSorts <- settings
     = case expr of
-        CocProp -> Just CocType
-        CocType -> Nothing
-        CocVariable index label -> atMay ctx index
+        CocProp -> Right CocType
+        CocType -> Left CocTypeHasNoType
+        CocVariable index label -> case atMay ctx index of
+            Just t -> Right t
+            Nothing -> Left (CocVariableNotBound index label)
         CocApply function argument -> do
             fType <- cocType settings ctx function
-            (CocForall label inType body) <- Just $ cocNorm settings fType
-            aType <- cocType settings ctx argument
-            checkEqual (cocNorm settings inType) (cocNorm settings aType)
-            Just $ cocNorm settings (cocSubst body 0 argument)
+            let normfType = cocNorm settings fType
+            case normfType of
+                (CocForall label inType body)
+                    -> do aType <- cocType settings ctx argument
+                          if (cocNorm settings inType) == (cocNorm settings aType)
+                              then Right $ cocNorm settings (cocSubst body 0 argument)
+                              else Left (CocTypeMismatch argument inType aType)
+                _ -> Left (CocNonFunctionApplication function normfType)
         CocLambda label inType body -> do
             inTypeType <- cocType settings ctx inType
-            inTypeSort <- asCocSort inTypeType
+            inTypeSort <- asCocSort inTypeType (CocNotSortError inType inTypeType)
             bodyType <- cocType settings (map (cocOpen 0) (inType:ctx)) body
             bodyTypeType <- cocType settings (map (cocOpen 0) (inType:ctx)) bodyType
-            bodyTypeSort <- asCocSort bodyTypeType
-            check $ (inTypeSort, bodyTypeSort) `elem` allowedSorts
-            Just $ CocForall label (cocNorm settings inType) (cocNorm settings bodyType)
+            bodyTypeSort <- asCocSort bodyTypeType (CocNotSortError bodyType bodyTypeType)
+            if (inTypeSort, bodyTypeSort) `elem` allowedSorts
+                then Right $ CocForall label (cocNorm settings inType) (cocNorm settings bodyType)
+                else Left CocTypeHasNoType
         CocForall label inType body -> do
             inTypeType <- cocType settings ctx inType
-            inTypeSort <- asCocSort inTypeType
+            inTypeSort <- asCocSort inTypeType (CocNotSortError inType inTypeType)
             bodyType <- cocType settings (map (cocOpen 0) (inType:ctx)) body
-            bodySort <- asCocSort bodyType
-            check $ (inTypeSort, bodySort) `elem` allowedSorts
-            Just $ (cocNorm settings bodyType)
+            bodySort <- asCocSort bodyType (CocNotSortError body bodyType)
+            if (inTypeSort, bodySort) `elem` allowedSorts
+                then Right $ (cocNorm settings bodyType)
+                else Left CocTypeHasNoType

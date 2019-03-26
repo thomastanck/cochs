@@ -72,7 +72,7 @@ main = do
                                             ++ (show propositionval))
                                     where settings = systemNumToSettings systemNum
                                           proofval = cocNorm settings (fromCocSyntax proofexpr)
-                                          Just prooftyp = cocType settings [] (fromCocSyntax proofexpr)
+                                          Right prooftyp = cocType settings [] (fromCocSyntax proofexpr)
                                           propositionval = cocNorm settings (fromCocSyntax propositionexpr)
                 Nothing -> do
                     putStrLn "Invalid system type"
