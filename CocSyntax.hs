@@ -34,7 +34,7 @@ instance Show CocSyntax where
     show (CocSyntaxApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
     show (CocSyntaxLambda param inType body) = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
     show (CocSyntaxForall param inType body)
-        = if isArrowSyntax param
+        = if param == CocSyntaxUnused
             then if isArrowSyntax inType
                 then "(" ++ (show inType) ++ ")->" ++ (show body)
                 else (show inType) ++ "->" ++ (show body)
