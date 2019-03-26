@@ -1,0 +1,45 @@
+define Nat =
+{\NatT:*.(NatT->NatT)->(NatT->NatT)};
+
+define pair =
+(\LeftT:*.(\RightT:*.(\a:LeftT.(\b:RightT.(\C:*.
+(\f:LeftT->RightT->C.f a b)
+)))));
+
+define PairOf =
+(\LeftT:*.(\RightT:*.{\C:*.
+(LeftT->RightT->C)->C
+}));
+
+define head =
+(\LeftT:*.(\RightT:*.(\p:(PairOf LeftT RightT).
+p LeftT (\a:LeftT.(\b:RightT.a))
+)));
+
+define tail =
+(\LeftT:*.(\RightT:*.(\p:(PairOf LeftT RightT).
+p RightT (\a:LeftT.(\b:RightT.b))
+)));
+
+define zero =
+(\NatT:*.(\:NatT->NatT.(\zero:NatT.zero)));
+
+define succ =
+(\n:Nat.(\NatT:*.(\f:NatT->NatT.(\x:NatT.f (n NatT f x)))));
+
+(\n:Nat.
+
+head
+Nat Nat
+(
+	n
+	(PairOf Nat Nat)
+	(\p:(PairOf Nat Nat).
+		pair Nat Nat
+		(tail Nat Nat p)
+		(succ (tail Nat Nat p))
+	)
+	(pair Nat Nat zero zero)
+)
+
+)

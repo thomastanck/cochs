@@ -1,0 +1,8 @@
+define Nat =
+{\NatT:*.(NatT->NatT)->(NatT->NatT)};
+
+(\n:Nat.
+(\NatT:*.(\f:NatT->NatT.(\x:NatT.
+f (n NatT f x)
+)))
+)
