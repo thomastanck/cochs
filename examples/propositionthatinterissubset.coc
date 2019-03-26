@@ -1,0 +1,82 @@
+// see proofthatinterissubset
+
+{\A0:*.
+{\propclass:{\prop:{\_:A0.*}.*}.
+{\prop:{\_:A0.*}.
+{\proofthatpropisinpropclass:(propclass prop).
+
+// This is what we want to say, but we need to inline the functions...
+//     (subset A0 (inter A0 propclass) prop)
+
+(
+
+// subset =
+(\A0:*.
+
+(\prop1:{\_:A0.*}.
+(\prop2:{\_:A0.*}.
+
+// We want to output a type which is inhabited
+// iff prop1 is a subset of prop2
+
+// Forall proofs that prop1 is true
+{\term:A0.
+{\proofthattermsatisfiesprop1:(prop1 term).
+
+// prop2 is true
+(prop2 term)
+
+}
+}
+
+)
+)
+
+)
+
+A0
+
+(
+
+// inter =
+(\A0:*.
+
+(\propclass:{\proposition:{\_:A0.*}.*}.
+(\term:A0.
+
+// This is the type we want to be inhabited
+// iff term satisfies the proposition (inter propclass),
+// which means we want this type to be inhabited
+// iff forall P,
+//   (P satisfies propclass) => (term satisfies P).
+
+// Here's the forall P,
+{\P:{\_:A0.*}.
+
+// if P is in propclass
+{\arbitraryprop:(propclass P).
+
+// then term satisfies P
+(P term)
+
+}
+}
+
+)
+)
+
+)
+
+
+A0
+
+propclass
+
+)
+
+prop
+
+)
+
+
+}}}}

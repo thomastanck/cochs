@@ -1,0 +1,12 @@
+// equality =
+(\type:*.
+(\obj1:type.
+(\obj2:type.
+
+{\z:{\_:type.*}.
+{\_:(z obj1).(z obj2)}
+}
+
+)
+)
+)

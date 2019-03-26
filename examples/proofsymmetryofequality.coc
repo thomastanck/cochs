@@ -1,0 +1,68 @@
+(\A:*.
+(\a:A.
+(\b:A.
+
+(\proofthataequalb:(
+
+// equality =
+(\type:*.
+(\obj1:type.
+(\obj2:type.
+
+{\z:{\_:type.*}.
+{\_:(z obj1).(z obj2)}
+}
+
+)
+)
+)
+
+A a b
+).
+
+(
+
+	// This thing takes in a function f of type A->*,
+	// and outputs a converter function from (f a) to (f b)
+	proofthataequalb
+
+	// This thing below takes in a value X and turns it into a type that represents X = a
+
+	(\X:A.(
+
+	// equality =
+	(\type:*.
+	(\obj1:type.
+	(\obj2:type.
+
+	{\z:{\_:type.*}.
+	{\_:(z obj1).(z obj2)}
+	}
+
+	)
+	)
+	)
+
+	A X a
+
+	))
+
+)
+
+// So this thing we just made converts proofs that (f a) to (f b)
+// i.e. it converts proofs that a = a to proofs that b = a.
+
+// So we give it a proof that a = a...
+
+// reflexivity A a =
+(\z:{\_:A.*}.
+(\p:(z a).p)
+)
+
+// And now we should have a proof that b = a.
+
+)
+
+)
+)
+)

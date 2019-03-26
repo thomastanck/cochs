@@ -1,0 +1,20 @@
+(\f:{\T:*.{\x:T.T}}.
+
+(\T:*.
+(\x:T.
+
+(\g:{\x:T.T}. // We need to compare this type
+g x
+)
+(f T) // To this type... but this type comes from a higher context
+
+)
+)
+
+)
+(\A:*.
+(\x:A.
+x
+)
+)
+

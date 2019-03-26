@@ -1,0 +1,15 @@
+// reflexivity =
+
+(\A:*.
+(\a:A.
+
+// we want to output something of type
+//   (equality A a a)
+// which is secretly
+//   {\z:{\_:A.*}.{\_:(z a).(z a)}}
+(\z:{\_:A.*}.
+(\p:(z a).p)
+)
+
+)
+)

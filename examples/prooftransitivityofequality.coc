@@ -1,0 +1,59 @@
+(\A:*.
+(\a:A.
+(\b:A.
+(\c:A.
+
+// (equality A a b)
+// (equality A b c)
+
+(\proofthataequalb:(
+// equality =
+(\type:*.
+(\obj1:type.
+(\obj2:type.
+
+{\z:{\_:type.*}.
+{\_:(z obj1).(z obj2)}
+}
+
+)
+)
+)
+A a b
+).
+
+(\proofthatbequalc:(
+// equality =
+(\type:*.
+(\obj1:type.
+(\obj2:type.
+
+{\z:{\_:type.*}.
+{\_:(z obj1).(z obj2)}
+}
+
+)
+)
+)
+A b c
+).
+
+// We want to output something of type
+//    (equality A a c)
+// aka
+//    {\z:{\_:A.*}.{\_:(z a).(z c)}}
+
+(\z:{\_:A.*}.
+(\p:(z a).
+(proofthatbequalc z (proofthataequalb z p))
+)
+)
+
+)
+
+)
+
+)
+)
+)
+)
