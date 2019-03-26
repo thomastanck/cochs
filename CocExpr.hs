@@ -5,6 +5,7 @@ import Data.Maybe(fromMaybe)
 
 import CocSyntax
 
+type CocType = CocExpr
 data CocExpr =
     -- Type of types
     -- e.g. CocForall (CocUnused) (CocVariable "A") (CocVariable "A")
@@ -17,9 +18,9 @@ data CocExpr =
     -- Denotes an application
     | CocApply { function :: CocExpr, argument :: CocExpr }
     -- Creates a function abstraction
-    | CocLambda { label :: String, inType :: CocExpr,  body :: CocExpr }
+    | CocLambda { label :: String, inType :: CocType,  body :: CocExpr }
     -- Creates a type abstraction
-    | CocForall { label :: String, inType :: CocExpr,  body :: CocExpr }
+    | CocForall { label :: String, inType :: CocType,  body :: CocExpr }
 
 instance Eq CocExpr where
     (==) CocProp CocProp =
@@ -41,9 +42,9 @@ instance Show CocExpr where
     show (CocProp) = "*"
     show (CocType) = "@"
     show (CocVariable index label) = label ++ (show index)
-    show (CocApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
-    show (CocLambda param inType body) = "(\\" ++ param ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
-    show (CocForall param inType body) = "{\\" ++ param ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
+    show (CocApply f a) = "(" ++ (show f) ++ " " ++ (show a) ++ ")"
+    show (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ ")"
+    show (CocForall p t b) = "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
 
 fromCocSyntax :: CocSyntax -> CocExpr
 fromCocSyntax syntax = fromCocSyntax' [] syntax
@@ -75,15 +76,15 @@ fromCocSyntax' labels syntax = case syntax of
     (CocSyntaxForall other inType body)
         -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in forall")
 
-asCocProp expr | CocProp <- expr = Just expr
-asCocProp _ = Nothing
-asCocType expr | CocType <- expr = Just expr
-asCocType _ = Nothing
+asCocProp expr     | CocProp         <- expr = Just expr
+asCocProp _                                  = Nothing
+asCocType expr     | CocType         <- expr = Just expr
+asCocType _                                  = Nothing
 asCocVariable expr | CocVariable _ _ <- expr = Just expr
-asCocVariable _ = Nothing
-asCocApply expr | CocApply _ _ <- expr = Just expr
-asCocApply _ = Nothing
-asCocLambda expr | CocLambda _ _ _ <- expr = Just expr
-asCocLambda _ = Nothing
-asCocForall expr | CocForall _ _ _ <- expr = Just expr
-asCocForall _ = Nothing
+asCocVariable _                              = Nothing
+asCocApply expr    | CocApply _ _    <- expr = Just expr
+asCocApply _                                 = Nothing
+asCocLambda expr   | CocLambda _ _ _ <- expr = Just expr
+asCocLambda _                                = Nothing
+asCocForall expr   | CocForall _ _ _ <- expr = Just expr
+asCocForall _                                = Nothing

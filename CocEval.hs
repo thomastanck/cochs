@@ -1,9 +1,6 @@
 module CocEval where
 
-import Debug.Trace
-
 import Safe(atMay)
-import Data.Maybe
 
 import CocExpr
 
@@ -19,26 +16,7 @@ asCocSort _ = Nothing
 data CocSettings = CocSettings { allowedSorts :: [(CocSort, CocSort)] }
     deriving (Eq, Show)
 
-data CocRule =
-    CocFTRuleProp
-    | CocFTRuleVar
-    | CocFTRuleApply
-    | CocFTRuleLambda { s1 :: CocSort, s2 :: CocSort }
-    | CocFTRuleForall { s1 :: CocSort, s2 :: CocSort }
-    | CocTJPropC
-    | CocTJVarC
-    | CocTJWeak
-    | CocTJLambdaC { s1 :: CocSort, s2 :: CocSort }
-    | CocTJForallC { s1 :: CocSort, s2 :: CocSort }
-    deriving (Eq, Show)
-
-data CocState = CocState { rules :: [CocRule], context :: [CocExpr] }
-    deriving (Eq, Show)
-
-data CocJudgement = CocJudgement { termContext :: [CocExpr], term :: CocExpr, typeContext :: [CocExpr], type' :: CocExpr }
-    deriving (Eq, Show)
-
-type CocContext = [CocJudgement]
+type CocContext = [CocType]
 
 systemNumToSettings :: Int -> CocSettings
 systemNumToSettings systemNum = CocSettings (propprop ++ proptype ++ typeprop ++ typetype)
@@ -47,124 +25,74 @@ systemNumToSettings systemNum = CocSettings (propprop ++ proptype ++ typeprop ++
           typeprop = if systemNum `div` 2 `mod` 2 == 1 then [(CocSortType, CocSortProp)] else []
           typetype = if systemNum `div` 4 `mod` 2 == 1 then [(CocSortType, CocSortType)] else []
 
-cocEval :: Int -> CocExpr -> CocJudgement
-cocEval systemNum expr =
-    cocEval' (systemNumToSettings systemNum) expr
+checkEqual a b = if a == b then Just a else Nothing
+check b = if b then Just b else Nothing
 
-cocEval' :: CocSettings -> CocExpr -> CocJudgement
-cocEval' settings expr =
-    CocJudgement [] expr [] expr
+-- Finds the normal form of an expr (without typechecking)
+cocNorm :: CocSettings -> CocExpr -> CocExpr
+cocNorm settings expr
+    | CocSettings allowedSorts <- settings
+    = case expr of
+        CocProp -> expr
+        CocType -> expr
+        CocVariable index label -> expr
+        CocApply function argument -> case (CocApply (cocNorm settings function) (cocNorm settings argument)) of
+            CocApply (CocLambda _ inType body) normArgument -> cocNorm settings (cocSubst body 0 normArgument)
+            other -> other
+        CocLambda label inType body -> CocLambda label (cocNorm settings inType) (cocNorm settings body)
+        CocForall label inType body -> CocForall label (cocNorm settings inType) (cocNorm settings body)
 
-traceme a = trace (show a) Just a
+cocSubst :: CocExpr -> Int -> CocExpr -> CocExpr
+cocSubst expr index withExpr
+    = case expr of
+        CocProp -> expr
+        CocType -> expr
+        CocVariable varindex label -> case (compare varindex index) of
+            LT -> CocVariable varindex label
+            EQ -> withExpr
+            GT -> CocVariable (varindex-1) label
+        CocApply function argument -> CocApply (cocSubst function index withExpr) (cocSubst argument index withExpr)
+        CocLambda label inType body -> CocLambda label (cocSubst inType index withExpr) (cocSubst body (index+1) (cocOpen 0 withExpr))
+        CocForall label inType body -> CocForall label (cocSubst inType index withExpr) (cocSubst body (index+1) (cocOpen 0 withExpr))
 
-checkEqual a b = if a == b then Just a else trace ((show a) ++ " != " ++ (show b)) Nothing
+cocOpen :: Int -> CocExpr -> CocExpr
+cocOpen index expr
+    = case expr of
+        CocProp -> expr
+        CocType -> expr
+        CocVariable varindex label -> case (compare varindex index) of
+            LT -> CocVariable varindex label
+            _ -> CocVariable (varindex+1) label
+        CocApply function argument -> CocApply (cocOpen index function) (cocOpen index argument)
+        CocLambda label inType body -> CocLambda label (cocOpen index inType) (cocOpen (index+1) body)
+        CocForall label inType body -> CocForall label (cocOpen index inType) (cocOpen (index+1) body)
 
-extendCocState (CocState rules context) x = (CocState rules (x:context))
-
-stateWithContext (CocState rules _) context = (CocState rules context)
-
-cocShift :: [CocExpr] -> [CocExpr] -> CocExpr -> CocExpr
-cocShift fromCtx toCtx expr = cocShift' ((length toCtx) - (length fromCtx)) expr
-
-cocShift' shiftAmt CocProp = CocProp
-cocShift' shiftAmt CocType = CocType
-cocShift' shiftAmt (CocVariable index label) = (CocVariable (index+shiftAmt) label)
-cocShift' shiftAmt (CocApply f a) = (CocApply (cocShift' shiftAmt f) (cocShift' shiftAmt a))
-cocShift' shiftAmt (CocLambda l t b) = (CocLambda l (cocShift' shiftAmt t) (cocShift' shiftAmt b))
-cocShift' shiftAmt (CocForall l t b) = (CocForall l (cocShift' shiftAmt t) (cocShift' shiftAmt b))
-
-applyFTRule :: CocState -> CocRule -> CocExpr -> Maybe CocJudgement
-applyFTRule state (CocFTRuleProp) term
-    | (CocProp) <- term
-    , (CocState rules context) <- state
-    = Just $ CocJudgement context term [] CocType
-applyFTRule state (CocFTRuleVar) term
-    | (CocVariable index varlabel) <- term
-    , (CocState rules context) <- state
-    = trace ("VAR " ++ (show context) ++ " " ++ (show varlabel) ++ (show index) ++ " = " ++ (show $ context !! index)) (do
-        varType <- atMay context index
-        return $ CocJudgement context term (drop (index+1) context) varType)
-applyFTRule state (CocFTRuleApply) term
-    | (CocApply function argument) <- term
-    , (CocState rules context) <- state
-    = do
-        trace ("((((((( " ++ (show context) ++ " of " ++ (show term)) (Just term)
-        (CocJudgement _ _ typeContext functionType) <- cocFindType state function
-        traceme functionType
-        (CocForall _ inType body) <- asCocForall functionType
-        traceme "hithere"
-        (CocJudgement _ _ _ argumentType) <- cocFindType state argument
-        traceme inType
-        traceme argumentType
-        traceme $ checkEqual inType argumentType
-        checkEqual inType argumentType
-        return $ CocJudgement context term (inType:typeContext) body
-applyFTRule state (CocFTRuleLambda s1 s2) term
-    | (CocLambda label inType body) <- term
-    , (CocState rules context) <- state
-    = do
-        trace (">>> " ++ (show context) ++ " of " ++ (show term)) (Just body)
-        trace (show s1) (Just body)
-        trace (show s2) (Just body)
-        traceme (CocLambda label inType body)
-        (CocJudgement _ _ _ inTypeType) <- cocFindType state inType
-        trace (show s1) (Just body)
-        trace (show s2) (Just body)
-        traceme inType
-        traceme inTypeType
-        inTypeSort <- asCocSort inTypeType
-        checkEqual inTypeSort s1
-        trace (show s1) (Just body)
-        trace (show s2) (Just body)
-        traceme inTypeSort
-        (CocJudgement _ _ bodyTypeContext bodyType) <- cocFindType (extendCocState state inType) body
-        traceme "--------1"
-        traceme bodyType
-        (CocJudgement _ _ _ bodyTypeType) <- cocFindType (stateWithContext state bodyTypeContext) bodyType
-        traceme "--------2"
-        traceme term
-        traceme bodyType
-        traceme bodyTypeType
-        bodyTypeSort <- asCocSort bodyTypeType
-        traceme "--------3"
-        trace (show s1) (Just body)
-        trace (show s2) (Just body)
-        traceme bodyType
-        traceme bodyTypeType
-        traceme bodyTypeSort
-        checkEqual bodyTypeSort s2
-        return $ CocJudgement context term context (CocForall label inType (cocShift' 1 (cocShift bodyTypeContext context bodyType)))
-applyFTRule state (CocFTRuleForall s1 s2) term
-    | (CocForall _ inType body) <- term
-    , (CocState rules context) <- state
-    = do
-        trace ("}}}}}}} " ++ (show term)) (Just 1)
-        (CocJudgement _ _ _ inTypeType) <- cocFindType state inType
-        inTypeSort <- asCocSort inTypeType
-        checkEqual inTypeSort s1
-        (CocJudgement _ _ _ bodyType) <- cocFindType (extendCocState state inType) body
-        bodySort <- asCocSort bodyType
-        checkEqual bodySort s2
-        return $ CocJudgement context term context bodyType
-applyFTRule _ _ _
-    = Nothing
-
-cocInitState :: CocSettings -> CocState
-cocInitState (CocSettings allowedSorts)
-    = CocState
-        ([CocFTRuleProp,
-          CocFTRuleVar,
-          CocFTRuleApply]
-         ++ (allowedSorts >>= (\(s1, s2) -> [CocFTRuleLambda s1 s2, CocFTRuleForall s1 s2]))
-        )
-        []
-
-cocFindType :: CocState -> CocExpr -> Maybe CocJudgement
-cocFindType state expr
-    | CocState rules context <- state
-    = atMay (do
-    rule <- rules
-    judgement <- maybeToList $ applyFTRule state rule expr
-    trace "Hiiiiiiiiiiiiiiiiiiii" [1]
-    trace (show judgement) [1]
-    return judgement) 0
+-- Finds the type of an expr in a given context
+cocType :: CocSettings -> CocContext -> CocExpr -> Maybe CocExpr
+cocType settings ctx expr
+    | CocSettings allowedSorts <- settings
+    = case expr of
+        CocProp -> Just CocType
+        CocType -> Nothing
+        CocVariable index label -> atMay ctx index
+        CocApply function argument -> do
+            fType <- cocType settings ctx function
+            (CocForall label inType body) <- Just $ cocNorm settings fType
+            aType <- cocType settings ctx argument
+            checkEqual (cocNorm settings inType) (cocNorm settings aType)
+            Just $ cocNorm settings (cocSubst body 0 argument)
+        CocLambda label inType body -> do
+            inTypeType <- cocType settings ctx inType
+            inTypeSort <- asCocSort inTypeType
+            bodyType <- cocType settings (map (cocOpen 0) (inType:ctx)) body
+            bodyTypeType <- cocType settings (map (cocOpen 0) (inType:ctx)) bodyType
+            bodyTypeSort <- asCocSort bodyTypeType
+            check $ (inTypeSort, bodyTypeSort) `elem` allowedSorts
+            Just $ CocForall label (cocNorm settings inType) (cocNorm settings bodyType)
+        CocForall label inType body -> do
+            inTypeType <- cocType settings ctx inType
+            inTypeSort <- asCocSort inTypeType
+            bodyType <- cocType settings (map (cocOpen 0) (inType:ctx)) body
+            bodySort <- asCocSort bodyType
+            check $ (inTypeSort, bodySort) `elem` allowedSorts
+            Just $ (cocNorm settings bodyType)
