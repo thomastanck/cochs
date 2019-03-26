@@ -1,7 +1,7 @@
 // This represents one with type Nat
 
 (\ NatT:*.
-(\ succ:{\:NatT.NatT}.
+(\ succ:NatT->NatT.
 (\ zero:NatT.
 
 succ zero

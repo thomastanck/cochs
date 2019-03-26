@@ -20,7 +20,7 @@
 // inter =
 (\A0:*.
 
-(\propclass:{\proposition:{\_:A0.*}.*}.
+(\propclass:(A0->*)->*.
 (\term:A0.
 
 // This is the type we want to be inhabited
@@ -30,7 +30,7 @@
 //   (P satisfies propclass) => (term satisfies P).
 
 // Here's the forall P,
-{\P:{\_:A0.*}.
+{\P:A0->*.
 
 // if P is in propclass
 {\arbitraryprop:(propclass P).

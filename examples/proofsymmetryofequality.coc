@@ -1,11 +1,11 @@
 define equality =
 (\type:*.(\obj1:type.(\obj2:type.
-{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+{\z:type->*.((z obj1)->(z obj2))}
 )));
 
 define reflexivity =
 (\A:*.(\a:A.
-(\z:{\_:A.*}.(\p:(z a).p))
+(\z:A->*.(\p:(z a).p))
 ));
 
 (\A:*.

@@ -1,6 +1,6 @@
 define Nat =
 {\NatT:*.
-{\:{\:NatT.NatT}.{\:NatT.NatT}}
+(NatT->NatT)->(NatT->NatT)
 };
 
 // This exponentiates two Nats together
@@ -17,7 +17,7 @@ define Nat =
 // a's NatT is the "base" one where the zero and succ carry over exactly
 // But b's succ actually needs to be represent multiplying by a.
 
-b {\:NatT.NatT} (a NatT)
+b (NatT->NatT) (a NatT)
 
 /*
 
@@ -26,28 +26,28 @@ We can see this more clearly by examining (a NatT)'s and (b SomeType)'s type:
 For (a NatT):
 
 {\ NatT1:*.
-{\ succ:{\:NatT1.NatT1}.
+{\ succ:NatT1->NatT1.
 {\ zero:NatT1.
 NatT1
 }}} NatT
 
   reducing to the following after 1 beta reduction,
 
-{\ succ:{\:NatT.NatT}.
+{\ succ:NatT->NatT.
 {\ zero:NatT.
 NatT
 }}
 
 For (b SomeType) it's the same:
 
-{\ succ:{\:SomeType.SomeType}.
+{\ succ:SomeType->SomeType.
 {\ zero:SomeType.
 SomeType
 }}
 
 Now for the types to be correct, we need (a NatT)'s type to match (b SomeType)'s argument's type.
 
-{\ succ:{\:NatT.NatT}.
+{\ succ:NatT->NatT.
 {\ zero:NatT.
 NatT
 }}
@@ -56,10 +56,10 @@ NatT
 
 {\:SomeType.SomeType}
 
-And this can only be done if SomeType == {\:NatT.NatT}
+And this can only be done if SomeType == NatT->NatT
 
-{\    :{\:NatT.NatT}.{\    :NatT.NatT}}
-{\succ:{\:NatT.NatT}.{\zero:NatT.NatT}} // Filling in the unused variables
+{\    :NatT->NatT.{\    :NatT.NatT}}
+{\succ:NatT->NatT.{\zero:NatT.NatT}} // Filling in the unused variables
 
 */
 

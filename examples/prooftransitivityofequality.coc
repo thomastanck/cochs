@@ -1,6 +1,6 @@
 define equality =
 (\type:*.(\obj1:type.(\obj2:type.
-{\z:{\_:type.*}.{\_:(z obj1).(z obj2)}}
+{\z:type->*.((z obj1)->(z obj2))}
 )));
 
 (\A:*.
@@ -14,9 +14,9 @@ define equality =
 // We want to output something of type
 //    (equality A a c)
 // aka
-//    {\z:{\_:A.*}.{\_:(z a).(z c)}}
+//    {\z:A->*.((z a)->(z c))}
 
-(\z:{\_:A.*}.
+(\z:A->*.
 (\p:(z a).
 // So this should be of type (z c)
 (proofthatbequalc z (proofthataequalb z p))

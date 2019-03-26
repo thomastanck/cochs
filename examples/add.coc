@@ -1,6 +1,6 @@
 define Nat =
 {\NatT:*.
-{\:{\:NatT.NatT}.{\:NatT.NatT}}
+(NatT->NatT)->(NatT->NatT)
 };
 
 // This adds two Nats together.
@@ -9,7 +9,7 @@ define Nat =
 (\ b:Nat.
 
 (\ NatT:*.
-(\ succ:{\:NatT.NatT}.
+(\ succ:NatT->NatT.
 (\ zero:NatT.
 
 a NatT succ (b NatT succ zero)

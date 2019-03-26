@@ -19,24 +19,18 @@
 // subset =
 (\A0:*.
 
-(\prop1:{\_:A0.*}.
-(\prop2:{\_:A0.*}.
+(\prop1:A0->*.
+(\prop2:A0->*.
 
 // We want to output a type which is inhabited
 // iff prop1 is a subset of prop2
 
-// Forall proofs that prop1 is true
+// Forall proofs that prop1 is true, prop2 is true
 {\testproof:A0.
-{\_:(prop1 testproof).
-
-// prop2 is true
-(prop2 testproof)
-
-}
+((prop1 testproof)->(prop2 testproof))
 }
 
 )
 )
 
 )
-

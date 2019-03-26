@@ -1,9 +1,9 @@
-(\f:{\T:*.{\x:T.T}}.
+(\f:{\T:*.T->T}.
 
 (\T:*.
 (\x:T.
 
-(\g:{\x:T.T}. // We need to compare this type
+(\g:T->T. // We need to compare this type
 g x
 )
 (f T) // To this type... but this type comes from a higher context

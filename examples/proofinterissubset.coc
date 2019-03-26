@@ -1,16 +1,16 @@
 // see inter.coc and subset.coc
 
 define inter =
-(\A0:*.(\propclass:{\proposition:{\_:A0.*}.*}.(\term:A0.
-{\P:{\_:A0.*}.{\arbitraryprop:(propclass P).
+(\A0:*.(\propclass:(A0->*)->*.(\term:A0.
+{\P:A0->*.{\arbitraryprop:(propclass P).
 (P term)
 }}
 )));
 
 // The following term has type
 // {\A0:*.
-// {\propclass:{\prop:{\_:A0.*}.*}.
-// {\prop:{\_:A0.*}.
+// {\propclass:(A0->*)->*.
+// {\prop:A0->*.
 // {\_:(propclass prop).
 // (subset A0 (inter A0 propclass) prop)
 // }}}}
@@ -21,9 +21,9 @@ define inter =
 // then the intersection of propclass will be a subset of prop.
 
 (\A0:*.
-(\propclass:{\prop:{\_:A0.*}.*}.
+(\propclass:(A0->*)->*.
 
-(\prop:{\_:A0.*}.
+(\prop:A0->*.
 (\proofthatpropisinpropclass:(propclass prop).
 
 (\term:A0.

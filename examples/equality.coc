@@ -3,8 +3,8 @@
 (\obj1:type.
 (\obj2:type.
 
-{\z:{\_:type.*}.
-{\_:(z obj1).(z obj2)}
+{\z:type->*.
+(z obj1)->(z obj2)
 }
 
 )

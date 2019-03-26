@@ -1,28 +1,20 @@
-(\ a:
-	{\ NatT:*.
-	{\ succ:{\:NatT.NatT}.
-	{\ zero:NatT.
-	NatT
-	}}}.
-(\ b:
-	{\ NatT:*.
-	{\ succ:{\:NatT.NatT}.
-	{\ zero:NatT.
-	NatT
-	}}}.
-(\ NatT:*.
-b {\:NatT.NatT} (a NatT)
-)))
+define Nat =
+{\NatT:*.
+(NatT->NatT)->(NatT->NatT)
+};
 
+define two =
 (\ NatT:*.
-(\ succ:{\:NatT.NatT}.
+(\ succ:NatT->NatT.
 (\ zero:NatT.
 succ (succ zero)
-)))
+)));
 
-(\ NatT:*.
-(\ succ:{\:NatT.NatT}.
-(\ zero:NatT.
-succ (succ zero)
-)))
+define exp =
+(\a:Nat.
+(\b:Nat.
+(\NatT:*.
+b (NatT->NatT) (a NatT)
+)));
 
+exp two two

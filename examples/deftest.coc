@@ -1,4 +1,4 @@
-define idtype = {\A:*.{\a:A.A}};
+define idtype = {\A:*.A->A};
 define id =
 	(\A:*.(\a:A.a));
 define idid =
