@@ -1,7 +1,8 @@
 module CocExpr where
 
-import Data.List(elemIndex)
+import Data.List(elemIndex, foldl')
 import Data.Maybe(fromMaybe)
+import Data.Map.Strict as Map
 
 import CocSyntax
 
@@ -46,11 +47,20 @@ instance Show CocExpr where
     show (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ ")"
     show (CocForall p t b) = "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
 
-fromCocSyntax :: CocSyntax -> CocExpr
-fromCocSyntax syntax = fromCocSyntax' [] syntax
+fromCocProgram :: (CocSyntax, [CocSyntax]) -> CocExpr
+fromCocProgram (expr,defs) = fromCocSyntax (fromCocDefs defs) expr
 
-fromCocSyntax' :: [String] -> CocSyntax -> CocExpr
-fromCocSyntax' labels syntax = case syntax of
+fromCocDefs :: [CocSyntax] -> Map.Map String CocExpr
+fromCocDefs defs
+    = Data.List.foldl' (f :: Map.Map String CocExpr -> CocSyntax -> Map.Map String CocExpr) (Map.empty :: Map.Map String CocExpr) (defs :: [CocSyntax])
+    where f defmap (CocSyntaxDefine defname expr)
+            = insert defname (fromCocSyntax defmap expr) defmap
+
+fromCocSyntax :: Map.Map String CocExpr -> CocSyntax -> CocExpr
+fromCocSyntax defmap syntax = fromCocSyntax' defmap [] syntax
+
+fromCocSyntax' :: Map.Map String CocExpr -> [String] -> CocSyntax -> CocExpr
+fromCocSyntax' defmap labels syntax = case syntax of
     (CocSyntaxProp)
         -> CocProp
     (CocSyntaxType)
@@ -58,21 +68,23 @@ fromCocSyntax' labels syntax = case syntax of
     (CocSyntaxVariable label)
         -> case elemIndex label labels of
             Just i -> CocVariable i label
-            Nothing -> error ("Error when parsing " ++ label ++ ": variable not bound")
+            Nothing -> case Map.lookup label defmap of
+                Just expr -> expr
+                Nothing -> error ("Error when parsing " ++ label ++ ": variable not bound")
     (CocSyntaxUnused)
         -> error ("Error when parsing _: Unused variable cannot appear in the bodies of expressions")
     (CocSyntaxApply function argument)
-        -> CocApply (fromCocSyntax' labels function) (fromCocSyntax' labels argument)
+        -> CocApply (fromCocSyntax' defmap labels function) (fromCocSyntax' defmap labels argument)
     (CocSyntaxLambda (CocSyntaxVariable label) inType body)
-        -> CocLambda label (fromCocSyntax' labels inType) (fromCocSyntax' (label:labels) body)
+        -> CocLambda label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
     (CocSyntaxLambda (CocSyntaxUnused) inType body)
-        -> CocLambda "_" (fromCocSyntax' labels inType) (fromCocSyntax' ("_":labels) body)
+        -> CocLambda "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
     (CocSyntaxLambda other inType body)
         -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in lambda")
     (CocSyntaxForall (CocSyntaxVariable label) inType body)
-        -> CocForall label (fromCocSyntax' labels inType) (fromCocSyntax' (label:labels) body)
+        -> CocForall label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
     (CocSyntaxForall (CocSyntaxUnused) inType body)
-        -> CocForall "_" (fromCocSyntax' labels inType) (fromCocSyntax' ("_":labels) body)
+        -> CocForall "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
     (CocSyntaxForall other inType body)
         -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in forall")
 

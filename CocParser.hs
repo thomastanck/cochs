@@ -1,4 +1,4 @@
-module CocParser(parseCocSyntax) where
+module CocParser(parseCocSyntax, parseCocProgram) where
 
 import Data.Void
 import Text.Megaparsec
@@ -25,6 +25,14 @@ parseCocSyntax :: Parser CocSyntax
 parseCocSyntax = do
     sc
     (try parseCocSyntaxApply) <|> parseCocSyntaxOne
+
+parseCocProgram :: Parser (CocSyntax, [CocSyntax])
+parseCocProgram = do
+    sc
+    result <- many parseCocSyntaxDefine
+    last <- parseCocSyntax
+    eof
+    return (last,result)
 
 parseCocSyntaxOne :: Parser CocSyntax
 parseCocSyntaxOne =
@@ -86,7 +94,7 @@ parseCocSyntaxUnused = do
     return $ CocSyntaxUnused
 
 rws :: [String] -- list of reserved words
-rws = ["Prop", "*", "Type", "@", "_"]
+rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
@@ -100,3 +108,12 @@ parseCocSyntaxVariable :: Parser CocSyntax
 parseCocSyntaxVariable = do
     ident <- identifier
     return $ CocSyntaxVariable ident
+
+parseCocSyntaxDefine :: Parser CocSyntax
+parseCocSyntaxDefine = do
+    symbol "define"
+    defname <- identifier
+    symbol "="
+    expr <- parseCocSyntax
+    symbol ";"
+    return $ CocSyntaxDefine defname expr

@@ -1,0 +1,7 @@
+define idtype = {\A:*.{\a:A.A}};
+define id =
+	(\A:*.(\a:A.a));
+define idid =
+	id idtype id;
+
+id idtype idid idtype id idtype idid

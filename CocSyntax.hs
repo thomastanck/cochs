@@ -1,6 +1,6 @@
 module CocSyntax where
 
-import Debug.Trace
+import Data.List.Split(splitOn)
 
 data CocSyntax =
     -- Type of types
@@ -19,6 +19,8 @@ data CocSyntax =
     | CocSyntaxLambda { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax }
     -- Creates a type abstraction
     | CocSyntaxForall { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax }
+    -- Creates a definition binding
+    | CocSyntaxDefine { defname :: String, expr :: CocSyntax }
 
 instance Show CocSyntax where
     show (CocSyntaxProp) = "*"
@@ -28,4 +30,5 @@ instance Show CocSyntax where
     show (CocSyntaxApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
     show (CocSyntaxLambda param inType body) = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
     show (CocSyntaxForall param inType body) = "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
+    show (CocSyntaxDefine defname expr) = "define " ++ defname ++ " = " ++ (show expr)
 
