@@ -39,7 +39,7 @@ test: FORCE
 	./Main eval 7 examples/break2.coc | grep "^Left " > /dev/null
 
 	./Main eval 7 examples/oneequalspredtwo.coc | grep "^Right " > /dev/null
-	./Main checktype 7 examples/proofreflexivityofequality.coc examples/propositionreflexivityofequality.coc | grep "==" > /dev/null
-	./Main checktype 7 examples/proofsymmetryofequality.coc examples/propositionsymmetryofequality.coc | grep "==" > /dev/null
-	./Main checktype 7 examples/prooftransitivityofequality.coc examples/propositiontransitivityofequality.coc | grep "==" > /dev/null
-	./Main checktype 7 examples/proofinterissubset.coc examples/propositioninterissubset.coc | grep "==" > /dev/null
+	./Main eval 7 examples/reflexivityofequality.coc | grep "^Right" > /dev/null
+	./Main eval 7 examples/symmetryofequality.coc | grep "^Right" > /dev/null
+	./Main eval 7 examples/transitivityofequality.coc | grep "^Right" > /dev/null
+	./Main eval 7 examples/interissubset.coc | grep "^Right" > /dev/null

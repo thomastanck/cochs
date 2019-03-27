@@ -8,6 +8,18 @@ define reflexivity =
 (\z:A->*.(\p:(z a).p))
 ));
 
+define symmetryofequality =
+{\A:*.
+{\a:A.
+{\b:A.
+
+{\_:(equality A a b).(equality A b a)}
+
+}
+}
+};
+
+define symmetry =
 (\A:*.
 (\a:A.
 (\b:A.
@@ -39,4 +51,6 @@ define reflexivity =
 
 )
 )
-)
+);
+
+(\p:symmetryofequality.p) symmetry

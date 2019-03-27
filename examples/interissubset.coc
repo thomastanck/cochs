@@ -7,6 +7,12 @@ define inter =
 }}
 )));
 
+define subset =
+(\A0:*.(\prop1:A0->*.(\prop2:A0->*.
+{\testproof:A0.((prop1 testproof)->(prop2 testproof))
+}
+)));
+
 // The following term has type
 // {\A0:*.
 // {\propclass:(A0->*)->*.
@@ -20,6 +26,17 @@ define inter =
 // if prop is in propclass,
 // then the intersection of propclass will be a subset of prop.
 
+define interissubset =
+{\A0:*.
+{\propclass:(A0->*)->*.
+{\prop:A0->*.
+{\proofthatpropisinpropclass:(propclass prop).
+
+(subset A0 (inter A0 propclass) prop)
+
+}}}};
+
+define proofinterissubset =
 (\A0:*.
 (\propclass:(A0->*)->*.
 
@@ -43,4 +60,7 @@ define inter =
 )
 
 )
-)
+);
+
+(\p:interissubset.p) proofinterissubset
+
