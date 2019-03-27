@@ -7,39 +7,39 @@ AutoMake-rules.md: FORCE
 	pandoc --number-sections --listings rules.md -o rules.pdf
 
 test: FORCE
-	./Main eval 7 examples/id.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/inter.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/subset.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/equality.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/welltypedpolymorphism.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/deftest.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/contextmixing.coc | grep "^Right " > /dev/null
+	./Main test 7 examples/id.coc
+	./Main test 7 examples/inter.coc
+	./Main test 7 examples/subset.coc
+	./Main test 7 examples/equality.coc
+	./Main test 7 examples/welltypedpolymorphism.coc
+	./Main test 7 examples/deftest.coc
+	./Main test 7 examples/contextmixing.coc
 
-	./Main eval 7 examples/succ.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/add.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/exp.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/exp22.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/zero.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/Nat.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/one.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/two.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/three.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/four.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/five.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/pred.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/predzero.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/predone.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/predtwo.coc | grep "^Right " > /dev/null
+	./Main test 7 examples/succ.coc
+	./Main test 7 examples/add.coc
+	./Main test 7 examples/exp.coc
+	./Main test 7 examples/exp22.coc
+	./Main test 7 examples/zero.coc
+	./Main test 7 examples/Nat.coc
+	./Main test 7 examples/one.coc
+	./Main test 7 examples/two.coc
+	./Main test 7 examples/three.coc
+	./Main test 7 examples/four.coc
+	./Main test 7 examples/five.coc
+	./Main test 7 examples/pred.coc
+	./Main test 7 examples/predzero.coc
+	./Main test 7 examples/predone.coc
+	./Main test 7 examples/predtwo.coc
 
-	./Main eval 7 examples/pair.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/head.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/tail.coc | grep "^Right " > /dev/null
+	./Main test 7 examples/pair.coc
+	./Main test 7 examples/head.coc
+	./Main test 7 examples/tail.coc
 
-	./Main eval 7 examples/break.coc | grep "^Left " > /dev/null
-	./Main eval 7 examples/break2.coc | grep "^Left " > /dev/null
+	./Main testfail 7 examples/break.coc
+	./Main testfail 7 examples/break2.coc
 
-	./Main eval 7 examples/oneequalspredtwo.coc | grep "^Right " > /dev/null
-	./Main eval 7 examples/reflexivityofequality.coc | grep "^Right" > /dev/null
-	./Main eval 7 examples/symmetryofequality.coc | grep "^Right" > /dev/null
-	./Main eval 7 examples/transitivityofequality.coc | grep "^Right" > /dev/null
-	./Main eval 7 examples/interissubset.coc | grep "^Right" > /dev/null
+	./Main test 7 examples/oneequalspredtwo.coc
+	./Main test 7 examples/reflexivityofequality.coc
+	./Main test 7 examples/symmetryofequality.coc
+	./Main test 7 examples/transitivityofequality.coc
+	./Main test 7 examples/interissubset.coc
