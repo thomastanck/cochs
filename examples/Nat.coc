@@ -1,12 +1,55 @@
-// Naturals that use church encoding
-// basically capture the idea of repeated function composition
+import "pair.coc" { pair head tail }
 
+define Nat =
 // We need to quantify over the domain that we're composing over
-{\ NatT:*.
+{\D:*.
 
 // Now we encode the meaning of "natural number", that is,
 // it takes in a function over this domain
 // and returns a function and returns a function over this domain.
-(NatT->NatT)->(NatT->NatT)
+	(D->D)->(D->D)};
 
-}
+define zero =
+(\D:*.(\f:D->D.(\x:D.
+				x)));
+
+define succ =
+(\n:Nat.(\D:*.(\f:D->D.(\x:D.f (n D f x)))));
+
+define one =
+succ zero;
+
+define two =
+succ one;
+
+define three =
+succ two;
+
+define four =
+succ three;
+
+define five =
+succ four;
+
+define pred =
+(\n:Nat.
+	head Nat Nat
+	(n
+		(PairOf Nat Nat)
+		(\p:(PairOf Nat Nat).
+			pair Nat Nat
+			(tail Nat Nat p)
+			(succ (tail Nat Nat p)))
+		(pair Nat Nat zero zero)));
+
+define add =
+(\a:Nat.(\b:Nat.(\D:*.
+					a D succ b)));
+
+define mult =
+(\a:Nat.(\b:Nat.(\D:*.
+					a D (add b) zero)));
+
+define exp =
+(\a:Nat.(\b:Nat.(\D:*.
+					b (D->D) (a D))));

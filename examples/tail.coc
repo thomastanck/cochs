@@ -1,8 +1,0 @@
-define PairOf =
-(\LeftT:*.(\RightT:*.{\C:*.
-(LeftT->RightT->C)->C
-}));
-
-(\A:*.(\B:*.(\p:(PairOf A B).
-p B (\a:A.(\b:B.b))
-)))

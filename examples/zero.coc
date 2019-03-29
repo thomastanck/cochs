@@ -1,9 +1,0 @@
-// This represents zero with type Nat
-
-(\ NatT:*.
-(\ succ:NatT->NatT.
-(\ zero:NatT.
-
-zero
-
-)))
