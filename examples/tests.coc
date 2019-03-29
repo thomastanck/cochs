@@ -1,23 +1,13 @@
 define contextmixing =
 (\f:{\T:*.T->T}.
-
  (\T:*.
   (\x:T.
-
    (\g:T->T. // We need to compare this type
-    g x
-   )
-   (f T) // To this type... but this type comes from a higher context
-
-  )
- )
-
- )
+    g x)
+   (f T)))) // To this type... but this type comes from a higher context
 (\A:*.
  (\x:A.
-  x
- )
- );
+  x));
 
 define idtype = {\A:*.A->A};
 
@@ -34,6 +24,4 @@ define welltypedpolymorphism =
 (\X:*.
  (\x:X.
   (\f:(\A:*.A->A) X.
-   f x
-  ))
- );
+   f x)));

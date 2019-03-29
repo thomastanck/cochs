@@ -19,32 +19,30 @@
 
 define inter =
 (\A0:*.
+ (\propclass:(A0->*)->*.
+  (\term:A0.
+   // This is the type we want to be inhabited
+   // iff term satisfies the proposition (inter propclass),
+   // which means we want this type to be inhabited
+   // iff forall P,
+   //   (P satisfies propclass) => (term satisfies P).
 
-(\propclass:(A0->*)->*.
-(\term:A0.
+   (\propclass:(A0->*)->*.
+    (\term:A0.
 
-// This is the type we want to be inhabited
-// iff term satisfies the proposition (inter propclass),
-// which means we want this type to be inhabited
-// iff forall P,
-//   (P satisfies propclass) => (term satisfies P).
+     // This is the type we want to be inhabited
+     // iff term satisfies the proposition (inter propclass),
+     // which means we want this type to be inhabited
+     // iff forall P,
+     //   (P satisfies propclass) => (term satisfies P).
 
-// Here's the forall P,
-{\P:A0->*.
-
-// if P is in propclass
-{\arbitraryprop:(propclass P).
-
-// then term satisfies P
-(P term)
-
-}
-}
-
-)
-)
-
-);
+     // Here's the forall P,
+     // if P is in propclass
+     // then term satisfies P
+     {\P:A0->*.
+     {\arbitraryprop:(propclass P).
+     (P term)
+     }})))));
 
 // We want to prove some higher order theorems.
 // So what we want to show is that the intersection of a propclass
@@ -64,22 +62,15 @@ define inter =
 
 define subset =
 (\A0:*.
+ (\prop1:A0->*.
+  (\prop2:A0->*.
+   // We want to output a type which is inhabited
+   // iff prop1 is a subset of prop2
 
-(\prop1:A0->*.
-(\prop2:A0->*.
-
-// We want to output a type which is inhabited
-// iff prop1 is a subset of prop2
-
-// Forall proofs that prop1 is true, prop2 is true
-{\testproof:A0.
-((prop1 testproof)->(prop2 testproof))
-}
-
-)
-)
-
-);
+   // Forall proofs that prop1 is true, prop2 is true
+   {\testproof:A0.
+   ((prop1 testproof)->(prop2 testproof))
+   })));
 
 // i.e. it proves that for any propclass,
 // and any prop,
@@ -88,37 +79,18 @@ define subset =
 
 define interissubset =
 {\A0:*.
-{\propclass:(A0->*)->*.
-{\prop:A0->*.
-{\proofthatpropisinpropclass:(propclass prop).
-
-(subset A0 (inter A0 propclass) prop)
-
-}}}};
+    {\propclass:(A0->*)->*.
+        {\prop:A0->*.
+            {\proofthatpropisinpropclass:(propclass prop).
+                (subset A0 (inter A0 propclass) prop)
+            }}}};
 
 define proofinterissubset =
 (\A0:*.
-(\propclass:(A0->*)->*.
-
-(\prop:A0->*.
-(\proofthatpropisinpropclass:(propclass prop).
-
-(\term:A0.
-
-// This would be the code but we need to inline inter.
-//     (\proofthattermsatisfiesprop1:(inter A0 propclass term).
-//         proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
-//     )
-
-(\proofthattermsatisfiesprop1:(inter A0 propclass term).
-    proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
-)
-
-)
-
-)
-)
-
-)
-);
-
+ (\propclass:(A0->*)->*.
+  (\prop:A0->*.
+   (\proofthatpropisinpropclass:(propclass prop).
+    (\term:A0.
+     (\proofthattermsatisfiesprop1:(inter A0 propclass term).
+      proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
+     ))))));

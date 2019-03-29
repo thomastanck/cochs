@@ -1,59 +1,58 @@
 define equality =
 (\type:*.(\obj1:type.(\obj2:type.
-						{\z:type->*.
-							(z obj1)->(z obj2)})));
+                      {\z:type->*.
+                      (z obj1)->(z obj2)})));
 
 define reflexivityofequality =
-{\A:*.{\a:A.
-		(equality A a a)}};
+A:*->a:A->equality A a a;
 
 define reflexivity =
 (\A:*.(\a:A.
-		// we want to output something of type
-		//   (equality A a a)
-		// which is secretly
-		//   {\z:A->*.((z a)->(z a))}
-		(\z:A->*.(\p:(z a).
-					p))));
+       // we want to output something of type
+       //   (equality A a a)
+       // which is secretly
+       //   {\z:A->*.((z a)->(z a))}
+       (\z:A->*.(\p:(z a).
+                 p))));
 
 define symmetryofequality =
-{\A:*.{\a:A.{\b:A.
-				{\_:(equality A a b).
-					(equality A b a)}}}};
+A:*->a:A->b:A->
+(equality A a b)->
+(equality A b a);
 
 define symmetry =
 (\A:*.(\a:A.(\b:A.
-	(\proofthataequalb:(equality A a b).
-		(
-			// This thing takes in a function f of type A->*,
-			// and outputs a converter function from (f a) to (f b)
-			proofthataequalb
+             (\proofthataequalb:(equality A a b).
+              (
+               // This thing takes in a function f of type A->*,
+               // and outputs a converter function from (f a) to (f b)
+               proofthataequalb
 
-			// This thing below takes in a value X and turns it into a type that represents X = a
+               // This thing below takes in a value X and turns it into a type that represents X = a
 
-			(\X:A.(equality A X a))
-		)
+               (\X:A.(equality A X a))
+              )
 
-		// So this thing we just made converts proofs that (f a) to (f b)
-		// i.e. it converts proofs that a = a to proofs that b = a.
+              // So this thing we just made converts proofs that (f a) to (f b)
+              // i.e. it converts proofs that a = a to proofs that b = a.
 
-		// So we give it a proof that a = a...
-		// And now we should have a proof that b = a.
-		(reflexivity A a)))));
+              // So we give it a proof that a = a...
+              // And now we should have a proof that b = a.
+              (reflexivity A a)))));
 
 define transitivityofequality =
-{\A:*.{\a:A.{\b:A.{\c:A.
-					{\_:(equality A a b).
-						{\_:(equality A b c).
-							(equality A a c)}}}}}};
+A:*->a:A->b:A->c:A.
+(equality A a b)->
+(equality A b c)->
+(equality A a c);
 
 define transitivity =
 (\A:*.(\a:A.(\b:A.(\c:A.
-	(\proofthataequalb:(equality A a b).(\proofthatbequalc:(equality A b c).
-		// We want to output something of type
-		//    (equality A a c)
-		// aka
-		//    {\z:A->*.((z a)->(z c))}
-		(\z:A->*.(\p:(z a).
-			// So this should be of type (z c)
-			(proofthatbequalc z (proofthataequalb z p))))))))));
+                   (\aeqb:(equality A a b).(\beqc:(equality A b c).
+                                            // We want to output something of type
+                                            //    (equality A a c)
+                                            // aka
+                                            //    {\z:A->*.((z a)->(z c))}
+                                            (\z:A->*.(\p:(z a).
+                                                      // So this should be of type (z c)
+                                                      (beqc z (aeqb z p))))))))));

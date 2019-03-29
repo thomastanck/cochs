@@ -3,15 +3,14 @@ import "pair.coc" { pair head tail }
 define Nat =
 // We need to quantify over the domain that we're composing over
 {\D:*.
-
-// Now we encode the meaning of "natural number", that is,
-// it takes in a function over this domain
-// and returns a function and returns a function over this domain.
-	(D->D)->(D->D)};
+    // Now we encode the meaning of "natural number", that is,
+    // it takes in a function over this domain
+    // and returns a function and returns a function over this domain.
+    (D->D)->(D->D)};
 
 define zero =
 (\D:*.(\f:D->D.(\x:D.
-				x)));
+                x)));
 
 define succ =
 (\n:Nat.(\D:*.(\f:D->D.(\x:D.f (n D f x)))));
@@ -33,23 +32,23 @@ succ four;
 
 define pred =
 (\n:Nat.
-	head Nat Nat
-	(n
-		(PairOf Nat Nat)
-		(\p:(PairOf Nat Nat).
-			pair Nat Nat
-			(tail Nat Nat p)
-			(succ (tail Nat Nat p)))
-		(pair Nat Nat zero zero)));
+ head Nat Nat
+ (n
+  (PairOf Nat Nat)
+  (\p:(PairOf Nat Nat).
+   pair Nat Nat
+   (tail Nat Nat p)
+   (succ (tail Nat Nat p)))
+  (pair Nat Nat zero zero)));
 
 define add =
 (\a:Nat.(\b:Nat.(\D:*.
-					a D succ b)));
+                 a D succ b)));
 
 define mult =
 (\a:Nat.(\b:Nat.(\D:*.
-					a D (add b) zero)));
+                 a D (add b) zero)));
 
 define exp =
 (\a:Nat.(\b:Nat.(\D:*.
-					b (D->D) (a D))));
+                 b (D->D) (a D))));
