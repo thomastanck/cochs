@@ -85,10 +85,15 @@ parseCocSyntaxForall = do
 
 parseCocSyntaxArrowForall :: Parser CocSyntax
 parseCocSyntaxArrowForall = do
-    intype <- parseCocSyntaxOne
+    in1 <- parseCocSyntaxOne
+    in2 <- optional (symbol ":" >> parseCocSyntaxOne)
     symbol "->"
     outtype <- parseCocSyntax
-    return $ CocSyntaxForall CocSyntaxUnused intype outtype
+    case in2 of
+        Just intype ->
+            return $ CocSyntaxForall in1 intype outtype
+        Nothing ->
+            return $ CocSyntaxForall CocSyntaxUnused in1 outtype
 
 parseCocSyntaxParenthesised :: Parser CocSyntax
 parseCocSyntaxParenthesised = do
