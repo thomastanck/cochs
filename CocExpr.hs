@@ -55,13 +55,10 @@ instance Show CocExpr where
                 else (show t) ++ "->" ++ (show b)
             else "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
 
-fromCocProgram :: (CocSyntax, [CocSyntax]) -> CocExpr
-fromCocProgram (expr,defs) = fromCocSyntax (fromCocDefs defs) expr
-
-fromCocDefs :: [CocSyntax] -> Map.Map String CocExpr
+fromCocDefs :: [CocDefinition] -> Map.Map String CocExpr
 fromCocDefs defs
-    = Data.List.foldl' (f :: Map.Map String CocExpr -> CocSyntax -> Map.Map String CocExpr) (Map.empty :: Map.Map String CocExpr) (defs :: [CocSyntax])
-    where f defmap (CocSyntaxDefine defname expr)
+    = Data.List.foldl' f Map.empty defs
+    where f defmap (CocDefinition defname expr)
             = insert defname (fromCocSyntax defmap expr) defmap
 
 fromCocSyntax :: Map.Map String CocExpr -> CocSyntax -> CocExpr

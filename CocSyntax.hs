@@ -19,8 +19,6 @@ data CocSyntax =
     | CocSyntaxLambda { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax }
     -- Creates a type abstraction
     | CocSyntaxForall { param :: CocSyntax, inType :: CocSyntax,  body :: CocSyntax }
-    -- Creates a definition binding
-    | CocSyntaxDefine { defname :: String, expr :: CocSyntax }
     deriving Eq
 
 isArrowSyntax (CocSyntaxForall CocSyntaxUnused _ _) = True
@@ -39,5 +37,15 @@ instance Show CocSyntax where
                 then "(" ++ (show inType) ++ ")->" ++ (show body)
                 else (show inType) ++ "->" ++ (show body)
             else "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
-    show (CocSyntaxDefine defname expr) = "define " ++ defname ++ " = " ++ (show expr)
 
+-- Creates a definition binding
+data CocDefinition = CocDefinition { defname :: String, expr :: CocSyntax }
+    deriving Eq
+
+instance Show CocDefinition where
+    show (CocDefinition defname expr) = "define " ++ defname ++ " = " ++ (show expr)
+
+data CocImport = CocImport { packagename :: String, defnamemap :: [(String, String)] }
+
+instance Show CocImport where
+    show (CocImport packagename defnamemap) = "import " ++ (show packagename) ++ "(" ++ (foldl1 (\a b-> a ++ " " ++ b) (map (\(a,b)->if a == b then a else a ++ " as " ++ b) defnamemap)) ++ ")"

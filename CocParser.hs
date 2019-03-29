@@ -28,13 +28,13 @@ parseCocSyntax = do
     <|> (try parseCocSyntaxArrowForall)
     <|> parseCocSyntaxOne
 
-parseCocProgram :: Parser (CocSyntax, [CocSyntax])
+parseCocProgram :: Parser ([CocImport], [CocDefinition])
 parseCocProgram = do
     sc
-    result <- many parseCocSyntaxDefine
-    last <- parseCocSyntax
+    imports <- many parseCocImport
+    definitions <- many parseCocDefinition
     eof
-    return (last,result)
+    return (imports,definitions)
 
 parseCocSyntaxOne :: Parser CocSyntax
 parseCocSyntaxOne =
@@ -103,7 +103,7 @@ parseCocSyntaxUnused = do
     return $ CocSyntaxUnused
 
 rws :: [String] -- list of reserved words
-rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";", "->"]
+rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";", "->", "import", "as"]
 
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
@@ -118,11 +118,26 @@ parseCocSyntaxVariable = do
     ident <- identifier
     return $ CocSyntaxVariable ident
 
-parseCocSyntaxDefine :: Parser CocSyntax
-parseCocSyntaxDefine = do
+parseCocDefinition :: Parser CocDefinition
+parseCocDefinition = do
     symbol "define"
     defname <- identifier
     symbol "="
     expr <- parseCocSyntax
     symbol ";"
-    return $ CocSyntaxDefine defname expr
+    return $ CocDefinition defname expr
+
+stringLiteral :: Parser String
+stringLiteral = (lexeme . try) $ C.char '\"' *> manyTill L.charLiteral (C.char '\"')
+
+parseCocImport :: Parser CocImport
+parseCocImport = do
+    symbol "import"
+    packagename <- stringLiteral
+    symbol "{"
+    defmap <- many $ do
+        defname <- identifier
+        mapto <- option defname (symbol "as" >> identifier)
+        return (defname,mapto)
+    symbol "}"
+    return $ CocImport packagename defmap

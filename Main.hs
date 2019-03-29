@@ -6,10 +6,33 @@ import Text.Read
 import Text.Megaparsec
 import System.Environment
 import System.Exit
+import Data.Map.Strict as Map
+import Data.Maybe
+import Path
 
 import CocExpr
 import CocEval
 import CocParser
+import CocSyntax
+
+parseProgramOrError :: String -> String -> ([CocImport],[CocDefinition])
+parseProgramOrError filename filecontents
+    = case parse parseCocProgram filename filecontents of
+        Left err -> error (errorBundlePretty err)
+        Right prog -> prog
+
+preprocessimports :: String -> [CocImport] -> IO [CocDefinition]
+preprocessimports filepath imports = fmap concat $ traverse (preprocessimport filepath) imports
+
+preprocessimport :: String -> CocImport -> IO [CocDefinition]
+preprocessimport filepath (CocImport packagename defnamemap) = do
+    filepath <- parseRelFile filepath
+    packagepath <- parseRelFile packagename
+    let packagepathstring = toFilePath $ (parent filepath) </> packagepath
+    packagecontents <- readFile packagepathstring
+    let (packageimports,packagedefs) = parseProgramOrError packagepathstring packagecontents
+    packageimporteddefs <- preprocessimports packagepathstring packageimports
+    return $ packageimporteddefs ++ packagedefs
 
 main :: IO ()
 main = do
@@ -20,7 +43,7 @@ main = do
                 then getContents
                 else readFile filename
             parseTest parseCocProgram input
-        "eval":systemType:filename:_ -> do
+        "eval":systemType:defname:filename:_ -> do
             case readMaybe systemType :: Maybe Int of
                 Just systemNum -> do
                     input <- if filename == "-"
@@ -30,7 +53,14 @@ main = do
                         Left err -> do
                             putStr $ errorBundlePretty err
                             exitFailure
-                        Right prog ->
+                        Right (imports,localdefs) -> do
+                            importeddefs <- preprocessimports filename imports
+                            let defs = importeddefs ++ localdefs
+                            let defmap = fromCocDefs defs
+                            let expr = fromJust $ Map.lookup defname defmap
+                            let settings = systemNumToSettings systemNum
+                            let val = cocNorm settings expr
+                            let typ = cocType settings [] expr
                             case typ of
                                 Left err -> do
                                     putStrLn $ show expr
@@ -44,13 +74,9 @@ main = do
                                     putStrLn $ show val
                                     putStrLn $ ":"
                                     putStrLn $ show typ
-                            where expr = fromCocProgram prog
-                                  settings = systemNumToSettings systemNum
-                                  val = cocNorm settings expr
-                                  typ = cocType settings [] expr
                 Nothing -> do
                     putStrLn "Invalid system type"
-        "test":systemType:filename:_ -> do
+        "test":systemType:defname:filename:_ -> do
             case readMaybe systemType :: Maybe Int of
                 Just systemNum -> do
                     input <- if filename == "-"
@@ -60,7 +86,14 @@ main = do
                         Left err -> do
                             putStr $ errorBundlePretty err
                             exitFailure
-                        Right prog ->
+                        Right (imports,localdefs) -> do
+                            importeddefs <- preprocessimports filename imports
+                            let defs = importeddefs ++ localdefs
+                            let defmap = fromCocDefs defs
+                            let expr = fromJust $ Map.lookup defname defmap
+                            let settings = systemNumToSettings systemNum
+                            let val = cocNorm settings expr
+                            let typ = cocType settings [] expr
                             case typ of
                                 Left err -> do
                                     putStrLn $ show expr
@@ -71,13 +104,9 @@ main = do
                                     exitFailure
                                 Right typ -> do
                                     exitSuccess
-                            where expr = fromCocProgram prog
-                                  settings = systemNumToSettings systemNum
-                                  val = cocNorm settings expr
-                                  typ = cocType settings [] expr
                 Nothing -> do
                     putStrLn "Invalid system type"
-        "testfail":systemType:filename:_ -> do
+        "testfail":systemType:defname:filename:_ -> do
             case readMaybe systemType :: Maybe Int of
                 Just systemNum -> do
                     input <- if filename == "-"
@@ -87,7 +116,14 @@ main = do
                         Left err -> do
                             putStr $ errorBundlePretty err
                             exitFailure
-                        Right prog ->
+                        Right (imports,localdefs) -> do
+                            importeddefs <- preprocessimports filename imports
+                            let defs = importeddefs ++ localdefs
+                            let defmap = fromCocDefs defs
+                            let expr = fromJust $ Map.lookup defname defmap
+                            let settings = systemNumToSettings systemNum
+                            let val = cocNorm settings expr
+                            let typ = cocType settings [] expr
                             case typ of
                                 Left err -> do
                                     exitSuccess
@@ -98,13 +134,9 @@ main = do
                                     putStrLn $ ":"
                                     putStrLn $ show typ
                                     exitFailure
-                            where expr = fromCocProgram prog
-                                  settings = systemNumToSettings systemNum
-                                  val = cocNorm settings expr
-                                  typ = cocType settings [] expr
                 Nothing -> do
                     putStrLn "Invalid system type"
-        "findtype":systemType:filename:_ -> do
+        "findtype":systemType:defname:filename:_ -> do
             case readMaybe systemType :: Maybe Int of
                 Just systemNum -> do
                     input <- if filename == "-"
@@ -114,7 +146,14 @@ main = do
                         Left err -> do
                             putStr $ errorBundlePretty err
                             exitFailure
-                        Right prog ->
+                        Right (imports,localdefs) -> do
+                            importeddefs <- preprocessimports filename imports
+                            let defs = importeddefs ++ localdefs
+                            let defmap = fromCocDefs defs
+                            let expr = fromJust $ Map.lookup defname defmap
+                            let settings = systemNumToSettings systemNum
+                            let val = cocNorm settings expr
+                            let typ = cocType settings [] expr
                             case typ of
                                 Left err -> do
                                     putStrLn $ show expr
@@ -124,39 +163,36 @@ main = do
                                     putStrLn $ show expr
                                     putStrLn $ ":"
                                     putStrLn $ show typ
-                            where expr = fromCocProgram prog
-                                  settings = systemNumToSettings systemNum
-                                  typ = cocType settings [] expr
                 Nothing -> do
                     putStrLn "Invalid system type"
-        "checktype":systemType:prooffilename:propositionfilename:_ -> do
-            case readMaybe systemType :: Maybe Int of
-                Just systemNum -> do
-                    proofinput <- readFile prooffilename
-                    propositioninput <- readFile propositionfilename
-                    case parse parseCocProgram prooffilename proofinput of
-                        Left err -> do
-                            putStr $ errorBundlePretty err
-                            exitFailure
-                        Right proofprog ->
-                            case parse parseCocProgram propositionfilename propositioninput of
-                                Left err -> do
-                                    putStr $ errorBundlePretty err
-                                    exitFailure
-                                Right propositionprog ->
-                                    putStrLn ((show proofexpr)
-                                            ++ "\n=>\n"
-                                            ++ (show proofval)
-                                            ++ "\n:\n"
-                                            ++ (show prooftyp)
-                                            ++ (if prooftyp == propositionval then "\n==\n" else "\n!=\n")
-                                            ++ (show propositionval))
-                                    where proofexpr = fromCocProgram proofprog
-                                          propositionexpr = fromCocProgram propositionprog
-                                          settings = systemNumToSettings systemNum
-                                          proofval = cocNorm settings proofexpr
-                                          Right prooftyp = cocType settings [] proofexpr
-                                          propositionval = cocNorm settings propositionexpr
-                Nothing -> do
-                    putStrLn "Invalid system type"
+        -- "checktype":systemType:prooffilename:propositionfilename:_ -> do
+        --     case readMaybe systemType :: Maybe Int of
+        --         Just systemNum -> do
+        --             proofinput <- readFile prooffilename
+        --             propositioninput <- readFile propositionfilename
+        --             case parse parseCocProgram prooffilename proofinput of
+        --                 Left err -> do
+        --                     putStr $ errorBundlePretty err
+        --                     exitFailure
+        --                 Right proofprog ->
+        --                     case parse parseCocProgram propositionfilename propositioninput of
+        --                         Left err -> do
+        --                             putStr $ errorBundlePretty err
+        --                             exitFailure
+        --                         Right propositionprog ->
+        --                             putStrLn ((show proofexpr)
+        --                                     ++ "\n=>\n"
+        --                                     ++ (show proofval)
+        --                                     ++ "\n:\n"
+        --                                     ++ (show prooftyp)
+        --                                     ++ (if prooftyp == propositionval then "\n==\n" else "\n!=\n")
+        --                                     ++ (show propositionval))
+        --                             where proofexpr = snd $ elemAt 0 $ fromCocProgram proofprog
+        --                                   propositionexpr = snd $ elemAt 0 $ fromCocProgram propositionprog
+        --                                   settings = systemNumToSettings systemNum
+        --                                   proofval = cocNorm settings proofexpr
+        --                                   Right prooftyp = cocType settings [] proofexpr
+        --                                   propositionval = cocNorm settings propositionexpr
+        --         Nothing -> do
+        --             putStrLn "Invalid system type"
         _ -> putStrLn "Invalid action"
