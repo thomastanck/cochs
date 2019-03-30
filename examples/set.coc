@@ -27,21 +27,12 @@ define inter =
    // iff forall P,
    //   (P satisfies propclass) => (term satisfies P).
 
-   (\propclass:(A0->*)->*.
-    (\term:A0.
-
-     // This is the type we want to be inhabited
-     // iff term satisfies the proposition (inter propclass),
-     // which means we want this type to be inhabited
-     // iff forall P,
-     //   (P satisfies propclass) => (term satisfies P).
-
-     // Here's the forall P,
-     // if P is in propclass
-     // then term satisfies P
-     {\P:A0->*.
-      {\arbitraryprop:(propclass P).
-       (P term)}})))));
+   // Here's the forall P,
+   // if P is in propclass
+   // then term satisfies P
+   {\P:A0->*.
+    {\arbitraryprop:(propclass P).
+     (P term)}})));
 
 // We want to prove some higher order theorems.
 // So what we want to show is that the intersection of a propclass

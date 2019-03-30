@@ -44,8 +44,7 @@ define pred =
 define add =
 (\a:Nat.
  (\b:Nat.
-  (\D:*.
-   a D succ b)));
+  a Nat succ b));
 
 define mult =
 (\a:Nat.
@@ -58,3 +57,13 @@ define exp =
  (\b:Nat.
   (\D:*.
    b (D->D) (a D))));
+
+define tests =
+(\exp22:Nat.
+ (\pred0:Nat.
+  (\pred1:Nat.
+   (\pred2:Nat.Nat))))
+(exp two two)
+(pred zero)
+(pred one)
+(pred two);
