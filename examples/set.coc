@@ -40,9 +40,8 @@ define inter =
      // if P is in propclass
      // then term satisfies P
      {\P:A0->*.
-     {\arbitraryprop:(propclass P).
-     (P term)
-     }})))));
+      {\arbitraryprop:(propclass P).
+       (P term)}})))));
 
 // We want to prove some higher order theorems.
 // So what we want to show is that the intersection of a propclass
@@ -55,10 +54,10 @@ define inter =
 // In the future,
 // what we want to show is that
 // // Forall props which are in propclass
-// (\prop:{\_:A.*}.(\propisinpropclass:(propclass prop).
-//   // inter propclass is a subset of prop.
-//   (subset A0 (inter A0 propclass) prop)
-// ))
+// // inter propclass is a subset of prop.
+// (\prop:{\_:A.*}.
+//  (\propisinpropclass:(propclass prop).
+//   (subset A0 (inter A0 propclass) prop)))
 
 define subset =
 (\A0:*.
@@ -69,8 +68,7 @@ define subset =
 
    // Forall proofs that prop1 is true, prop2 is true
    {\testproof:A0.
-   ((prop1 testproof)->(prop2 testproof))
-   })));
+    ((prop1 testproof)->(prop2 testproof))})));
 
 // i.e. it proves that for any propclass,
 // and any prop,
@@ -79,11 +77,10 @@ define subset =
 
 define interissubset =
 {\A0:*.
-    {\propclass:(A0->*)->*.
-        {\prop:A0->*.
-            {\proofthatpropisinpropclass:(propclass prop).
-                (subset A0 (inter A0 propclass) prop)
-            }}}};
+ {\propclass:(A0->*)->*.
+  {\prop:A0->*.
+   {\proofthatpropisinpropclass:(propclass prop).
+    (subset A0 (inter A0 propclass) prop)}}}};
 
 define proofinterissubset =
 (\A0:*.
@@ -92,5 +89,4 @@ define proofinterissubset =
    (\proofthatpropisinpropclass:(propclass prop).
     (\term:A0.
      (\proofthattermsatisfiesprop1:(inter A0 propclass term).
-      proofthattermsatisfiesprop1 prop proofthatpropisinpropclass
-     ))))));
+      proofthattermsatisfiesprop1 prop proofthatpropisinpropclass))))));

@@ -1,15 +1,24 @@
 define pair =
-(\A:*.(\B:*.(\a:A.(\b:B.(\C:*.
-                         (\f:A->B->C.f a b))))));
+(\A:*.
+ (\B:*.
+  (\a:A.
+   (\b:B.
+    (\C:*.
+     (\f:A->B->C.f a b))))));
 
 define PairOf =
-(\LeftT:*.(\RightT:*.{\C:*.
-           (LeftT->RightT->C)->C}));
+(\LeftT:*.
+ (\RightT:*.{\C:*.
+             (LeftT->RightT->C)->C}));
 
 define head =
-(\A:*.(\B:*.(\p:(PairOf A B).
-             p A (\a:A.(\b:B.a)))));
+(\A:*.
+ (\B:*.
+  (\p:(PairOf A B).
+   p A (\a:A.(\b:B.a)))));
 
 define tail =
-(\A:*.(\B:*.(\p:(PairOf A B).
-             p B (\a:A.(\b:B.b)))));
+(\A:*.
+ (\B:*.
+  (\p:(PairOf A B).
+   p B (\a:A.(\b:B.b)))));

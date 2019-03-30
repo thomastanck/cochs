@@ -1,5 +1,6 @@
-import "./Nat.coc" { Nat one two succ pred }
-import "./equality.coc" { equality reflexivity }
+import "./Nat.coc" {Nat one two succ pred}
+import "./equality.coc" {equality reflexivity}
 
 define main =
-(\p:(equality Nat one (pred two)).p) (reflexivity Nat one);
+(\p:(equality Nat one (pred two)).p)
+(reflexivity Nat one);
