@@ -74,3 +74,38 @@ define transitivity =
        (\p:(z a).
         // So this should be of type (z c)
         (beqc z (aeqb z p))))))))));
+
+define welldefinednessofequality =
+{\A:*.
+ {\B:*.
+  {\f:A->B.
+   {\xa:A.
+    {\ya:A.
+     (equality A xa ya) ->
+     (equality B (f xa) (f ya))}}}}};
+
+define welldefinedness =
+(\A:*.
+ (\B:*.
+  (\f:A->B.
+   (\xa:A.
+    (\ya:A.
+     (\xaeqya:(equality A xa ya).
+
+      xaeqya
+
+      (\za:A.
+       equality B (f xa) (f za))
+
+      (reflexivity B (f xa))))))));
+
+define equalitytests =
+(\refl:reflexivityofequality.
+(\sym:symmetryofequality.
+(\trans:transitivityofequality.
+(\def:welldefinednessofequality.
+refl))))
+reflexivity
+symmetry
+transitivity
+welldefinedness;

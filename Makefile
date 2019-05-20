@@ -17,7 +17,7 @@ test: FORCE
 	./Main test 7 interissubset examples/set.coc
 	./Main test 7 proofinterissubset examples/set.coc
 
-	./Main test 7 equality examples/equality.coc
+	./Main test 7 equalitytests examples/equality.coc
 
 	./Main test 7 succ examples/Nat.coc
 	./Main test 7 one examples/Nat.coc
