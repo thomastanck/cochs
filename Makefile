@@ -1,5 +1,5 @@
-all:
-	ghc -dynamic Main
+# all:
+# 	ghc -dynamic Main
 
 FORCE:
 
