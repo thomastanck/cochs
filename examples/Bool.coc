@@ -1,0 +1,4 @@
+define Bool = {\A:*.A->A->A};
+
+define true = (\A:*.(\fst:A.(\snd:A.fst)));
+define false = (\A:*.(\fst:A.(\snd:A.snd)));

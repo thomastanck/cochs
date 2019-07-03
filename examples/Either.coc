@@ -1,0 +1,31 @@
+define Either =
+(\A:*.
+ (\B:*.
+  {\C:*.
+   (A->C)->
+   (B->C)->
+   C}));
+
+define left =
+(\A:*.
+ (\B:*.
+  (\a:A.
+   (\C:*.
+    (\f:(A->C).
+     (\_:(B->C).
+      f a))))));
+
+define right =
+(\A:*.
+ (\B:*.
+  (\b:B.
+   (\C:*.
+    (\_:(A->C).
+     (\f:(B->C).
+      f b))))));
+
+define lefttypecheck =
+(\f:{\A:*.{\B:*.{\a:A.(Either A B)}}}.f) left;
+
+define righttypecheck =
+(\f:{\A:*.{\B:*.{\b:B.(Either A B)}}}.f) right;

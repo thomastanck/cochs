@@ -1,4 +1,5 @@
 import "pair.coc" {pair head tail}
+import "Bool.coc" {Bool true false}
 
 // We need to quantify over the domain that we're composing over
 define Nat =
@@ -57,6 +58,17 @@ define exp =
  (\b:Nat.
   (\D:*.
    b (D->D) (a D))));
+
+define iszero =
+(\n:Nat.
+ n Bool (\_:Bool.false) true);
+
+define ifzero =
+(\n:Nat.
+ (\A:*.
+  (\ifiszero:A.
+   (\ifnotzero:A.
+    n A (\_:A.ifnotzero) ifiszero))));
 
 define tests =
 (\exp22:Nat.
