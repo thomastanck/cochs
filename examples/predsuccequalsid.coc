@@ -1,0 +1,52 @@
+import "./Nat.coc" {Nat succ pred}
+import "./equality.coc" {equality transitivity welldefinedness symmetry}
+
+define proofsketch =
+(\AltNat:*.
+ (\succAltNat:AltNat->AltNat.
+  (\predAltNat:AltNat->AltNat.
+   (\f:Nat->AltNat.
+    (\g:AltNat->Nat.
+     (\proofgfinv:{\n:Nat.(equality Nat n (g (f n)))}.
+      //(\prooffginv:{\n:AltNat.(equality AltNat n (f (g n)))}.
+       //(\prooffhomomorphicsucc:{\n:Nat.(equality AltNat (succAltNat (f n)) (f (succ n)))}.
+        //(\prooffhomomorphicpred:{\n:Nat.(equality AltNat (predAltNat (f n)) (f (pred n)))}.
+         (\proofghomomorphicsucc:{\n:AltNat.(equality Nat (g (succAltNat n)) (succ (g n)))}.
+          (\proofghomomorphicpred:{\n:AltNat.(equality Nat (g (predAltNat n)) (pred (g n)))}.
+           (\proofpredsuccAltNatequalsid:{\n:AltNat.(equality AltNat n (predAltNat (succAltNat n)))}.
+            (\n:Nat.
+             (symmetry Nat n (g (f n)) (proofgfinv n))
+             (\m:Nat.equality Nat n (pred (succ m)))
+             // (equality Nat n (pred (succ (g (f n)))))
+             (transitivity Nat n (pred (g (succAltNat (f n)))) (pred (succ (g (f n))))
+              // (equality Nat n (pred (g (succAltNat (f n)))))
+              (transitivity Nat n (g (predAltNat (succAltNat (f n)))) (pred (g (succAltNat (f n))))
+               // (equality Nat n (g (predAltNat (succAltNat (f n)))))
+               (transitivity Nat n (g (f n)) (g (predAltNat (succAltNat (f n))))
+                (proofgfinv n)
+                // (equality Nat (g (f n)) (g (predAltNat (succAltNat (f n)))))
+                (welldefinedness AltNat Nat g (f n) (predAltNat (succAltNat (f n)))
+                 // (equality AltNat (f n) (predAltNat (succAltNat (f n))))
+                 (proofpredsuccAltNatequalsid (f n))))
+               (proofghomomorphicpred (succAltNat (f n))))
+              (welldefinedness Nat Nat pred (g (succAltNat (f n))) (succ (g (f n))) (proofghomomorphicsucc (f n))))
+))))))))))//)))
+;
+
+define proofsketchtypecheck =
+(\AltNat:*.
+ (\succAltNat:AltNat->AltNat.
+  (\predAltNat:AltNat->AltNat.
+   (\f:Nat->AltNat.
+    (\g:AltNat->Nat.
+     (\proofgfinv:{\n:Nat.(equality Nat n (g (f n)))}.
+      //(\prooffginv:{\n:AltNat.(equality AltNat n (f (g n)))}.
+       //(\prooffhomomorphicsucc:{\n:Nat.(equality AltNat (succAltNat (f n)) (f (succ n)))}.
+        //(\prooffhomomorphicpred:{\n:Nat.(equality AltNat (predAltNat (f n)) (f (pred n)))}.
+         (\proofghomomorphicsucc:{\n:AltNat.(equality Nat (g (succAltNat n)) (succ (g n)))}.
+          (\proofghomomorphicpred:{\n:AltNat.(equality Nat (g (predAltNat n)) (pred (g n)))}.
+           (\proofpredsuccAltNatequalsid:{\n:AltNat.(equality AltNat n (predAltNat (succAltNat n)))}.
+            (\n:Nat.
+             (\proof:(equality Nat n (pred (succ n))).proof)
+             (proofsketch AltNat succAltNat predAltNat f g proofgfinv proofghomomorphicsucc proofghomomorphicpred proofpredsuccAltNatequalsid n)
+))))))))));

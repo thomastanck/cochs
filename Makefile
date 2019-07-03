@@ -34,6 +34,8 @@ test: FORCE
 
 	stack run test 7 main examples/oneequalspredtwo.coc
 
+	stack run test 7 proofsketchtypecheck examples/predsuccequalsid.coc
+
 	stack run test 7 pair examples/pair.coc
 	stack run test 7 head examples/pair.coc
 	stack run test 7 tail examples/pair.coc
