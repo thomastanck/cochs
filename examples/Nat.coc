@@ -1,5 +1,6 @@
 import "pair.coc" {pair head tail}
 import "Bool.coc" {Bool true false}
+import "equality.coc" {equality reflexivity}
 
 // We need to quantify over the domain that we're composing over
 define Nat =
@@ -69,6 +70,17 @@ define ifzero =
   (\ifiszero:A.
    (\ifnotzero:A.
     n A (\_:A.ifnotzero) ifiszero))));
+
+define commutativityaddsucc =
+{\a:Nat.
+ {\b:Nat.
+  (equality Nat (add (succ a) b) (succ (add a b)))}};
+
+define commutativityaddsuccproof =
+(\p:commutativityaddsucc.p)
+(\a:Nat.
+ (\b:Nat.
+   reflexivity Nat (add (succ a) b)));
 
 define tests =
 (\exp22:Nat.
