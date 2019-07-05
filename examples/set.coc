@@ -1,6 +1,34 @@
 // Idea is if we have P = A -> *,
 // then we can ask ourselves if the type (P x) : * is inhabited.
 
+define void =
+{\P:*.P};
+
+define not =
+(\P:*.P->void);
+
+define notvoid =
+(\p:not void.p)
+(\P:{\P:*.P}.P);
+
+define setisempty =
+(\A0:*.
+ (\S:A0->*.
+  {\a:A0.
+   (S a)
+   -> void}));
+
+define emptyset =
+(\A0:*.
+ (\a:A0.void));
+
+define emptysetisempty =
+(\p:{\A0:*.setisempty A0 (emptyset A0)}.p)
+(\A0:*.
+ (\a:A0.
+  (\inemptyset:emptyset A0 a.
+   inemptyset)));
+
 // So if types are true/false depending on if they are inhabited,
 // then P is some proposition
 // that is true/false depending on what its argument is.
@@ -31,8 +59,8 @@ define inter =
    // if P is in propclass
    // then term satisfies P
    {\P:A0->*.
-    {\arbitraryprop:(propclass P).
-     (P term)}})));
+    (propclass P)
+    -> (P term)})));
 
 // We want to prove some higher order theorems.
 // So what we want to show is that the intersection of a propclass
@@ -70,8 +98,8 @@ define interissubset =
 {\A0:*.
  {\propclass:(A0->*)->*.
   {\prop:A0->*.
-   {\proofthatpropisinpropclass:(propclass prop).
-    (subset A0 (inter A0 propclass) prop)}}}};
+   (propclass prop)
+   -> (subset A0 (inter A0 propclass) prop)}}};
 
 define proofinterissubset =
 (\A0:*.
