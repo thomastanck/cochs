@@ -1,0 +1,44 @@
+import "Either.coc" { Either left right }
+
+define neg =
+(\P:*.P->{\Z:*.Z});
+
+define negalt =
+(\P:*.{\Z:*.P->Z});
+
+define LEM =
+{\P:*.Either P (neg P)};
+
+define negAorBimpAarrowB =
+(\typecheck:{\A:*.{\B:*.(Either (neg A) B)->(A->B)}}.
+ typecheck)
+(\A:*.
+ (\B:*.
+  (\e:(Either (neg A) B).
+   (\a:A.
+    e B (\nega:(neg A).nega a B) (\b:B.b)))));
+
+define AarrowBimpnegAorB =
+(\typecheck:LEM->{\A:*.{\B:*.(A->B)->(Either (neg A) B)}}.
+ typecheck)
+(\lem:LEM.
+ (\A:*.
+  (\B:*.
+   (\arrow:A->B.
+    lem A (Either (neg A) B) (\a:A.right (neg A) B (arrow a)) (\nega:(neg A).left (neg A) B nega)
+    ))));
+
+define negequivnegalt =
+(\righttypecheck:{\P:*.(neg P)->(negalt P)}.
+ (\lefttypecheck:{\P:*.(negalt P)->(neg P)}.
+  righttypecheck))
+(\P:*.
+ (\negp:(neg P).
+  (\Z:*.
+   (\p:P.
+    negp p Z))))
+(\P:*.
+ (\negaltp:(negalt P).
+  (\p:P.
+   (\Z:*.
+    negaltp Z p))));
