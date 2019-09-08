@@ -48,4 +48,4 @@ instance Show CocDefinition where
 data CocImport = CocImport { packagename :: String, defnamemap :: [(String, String)] }
 
 instance Show CocImport where
-    show (CocImport packagename defnamemap) = "import " ++ (show packagename) ++ "(" ++ (foldl1 (\a b-> a ++ " " ++ b) (map (\(a,b)->if a == b then a else a ++ " as " ++ b) defnamemap)) ++ ")"
+    show (CocImport packagename defnamemap) = "import " ++ (show packagename) ++ "{" ++ (foldl1 (\a b-> a ++ " " ++ b) (map (\(a,b)->if a == b then a else a ++ " as " ++ b) defnamemap)) ++ "}"
