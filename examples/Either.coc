@@ -29,3 +29,17 @@ define lefttypecheck =
 
 define righttypecheck =
 (\f:{\A:*.{\B:*.{\b:B.(Either A B)}}}.f) right;
+
+define orElim =
+(\A:*.
+ (\B:*.
+  (\C:*.
+   (\eitheraorb:Either A B.
+    (\ac:A->C.
+     (\bc:B->C.
+      eitheraorb C ac bc))))));
+
+define orelimtypecheck =
+(\f:{\A:*.{\B:*.{\C:*.
+  (Either A B) -> (A -> C) -> (B -> C) -> C}}}.f)
+orElim;

@@ -76,6 +76,9 @@ define commutativityaddsucc =
  {\b:Nat.
   (equality Nat (add (succ a) b) (succ (add a b)))}};
 
+define addsuccab = (\a:Nat.(\b:Nat.(add (succ a) b)));
+define succaddab = (\a:Nat.(\b:Nat.(succ (add a b))));
+
 define commutativityaddsuccproof =
 (\p:commutativityaddsucc.p)
 (\a:Nat.

@@ -1,8 +1,8 @@
 define equality =
-(\type:*.
- (\obj1:type.
-  (\obj2:type.
-   {\z:type->*.
+(\T:*.
+ (\obj1:T.
+  (\obj2:T.
+   {\z:T->*.
     (z obj1)->(z obj2)})));
 
 define reflexivityofequality =

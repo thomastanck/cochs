@@ -40,6 +40,14 @@ test: FORCE
 	stack run test 7 head examples/pair.coc
 	stack run test 7 tail examples/pair.coc
 
+	stack run test 7 lefttypecheck examples/Either.coc
+	stack run test 7 righttypecheck examples/Either.coc
+	stack run test 7 orelimtypecheck examples/Either.coc
+
+	stack run test 7 negAorBimpAarrowB examples/lem.coc
+	stack run test 7 AarrowBimpnegAorB examples/lem.coc
+	stack run test 7 negequivnegalt examples/lem.coc
+
 	stack run testfail 7 break examples/break.coc
 	stack run testfail 7 break2 examples/break.coc
 

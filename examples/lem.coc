@@ -1,5 +1,7 @@
 import "Either.coc" { Either left right }
 
+define Bot = {\A:*.A};
+
 define neg =
 (\P:*.P->{\Z:*.Z});
 
@@ -8,6 +10,9 @@ define negalt =
 
 define LEM =
 {\P:*.Either P (neg P)};
+
+define Peirce =
+{\A:*.{\B:*.((A->B)->A)->A}};
 
 define negAorBimpAarrowB =
 (\typecheck:{\A:*.{\B:*.(Either (neg A) B)->(A->B)}}.
