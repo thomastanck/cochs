@@ -44,6 +44,7 @@ parseCocSyntaxOne =
     <|> parseCocSyntaxForall
     <|> parseCocSyntaxParenthesised
     <|> parseCocSyntaxVariable
+    <|> parseCocSyntaxHole
 
 parseCocSyntaxProp :: Parser CocSyntax
 parseCocSyntaxProp = do
@@ -118,10 +119,23 @@ identifier = (lexeme . try) (p >>= check)
                 then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                 else return x
 
+hole_identifier :: Parser String
+hole_identifier = (lexeme . try) (p >>= check)
+  where
+    p       = (:) <$> (C.char '?') <*> ((:) <$> C.letterChar <*> many C.alphaNumChar)
+    check x = if x `elem` rws
+                then fail $ "keyword " ++ show x ++ " cannot be an hole identifier"
+                else return x
+
 parseCocSyntaxVariable :: Parser CocSyntax
 parseCocSyntaxVariable = do
     ident <- identifier
     return $ CocSyntaxVariable ident
+
+parseCocSyntaxHole :: Parser CocSyntax
+parseCocSyntaxHole = do
+    ident <- hole_identifier
+    return $ CocSyntaxHole ident
 
 parseCocDefinition :: Parser CocDefinition
 parseCocDefinition = do

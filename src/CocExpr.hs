@@ -16,6 +16,8 @@ data CocExpr =
     | CocType
     -- Denotes a variable
     | CocVariable { index :: Int, label :: String }
+    -- Denotes a hole
+    | CocHole { label :: String }
     -- Denotes an application
     | CocApply { function :: CocExpr, argument :: CocExpr }
     -- Creates a function abstraction
@@ -45,7 +47,8 @@ isArrowExpr _ = False
 instance Show CocExpr where
     show (CocProp) = "*"
     show (CocType) = "@"
-    show (CocVariable index label) = label ++ (show index)
+    show (CocVariable index label) = label
+    show (CocHole label) = label
     show (CocApply f a) = "(" ++ (show f) ++ " " ++ (show a) ++ ")"
     show (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ ")"
     show (CocForall p t b)
@@ -76,6 +79,8 @@ fromCocSyntax' defmap labels syntax = case syntax of
             Nothing -> case Map.lookup label defmap of
                 Just expr -> expr
                 Nothing -> error ("Error when parsing " ++ label ++ ": variable not bound")
+    (CocSyntaxHole label)
+        -> CocHole label
     (CocSyntaxUnused)
         -> error ("Error when parsing _: Unused variable cannot appear in the bodies of expressions")
     (CocSyntaxApply function argument)
@@ -99,6 +104,8 @@ asCocType expr     | CocType         <- expr = Just expr
 asCocType _                                  = Nothing
 asCocVariable expr | CocVariable _ _ <- expr = Just expr
 asCocVariable _                              = Nothing
+asCocHole expr     | CocHole _       <- expr = Just expr
+asCocHole _                                  = Nothing
 asCocApply expr    | CocApply _ _    <- expr = Just expr
 asCocApply _                                 = Nothing
 asCocLambda expr   | CocLambda _ _ _ <- expr = Just expr

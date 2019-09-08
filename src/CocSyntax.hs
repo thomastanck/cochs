@@ -11,6 +11,8 @@ data CocSyntax =
     | CocSyntaxType
     -- Denotes a variable
     | CocSyntaxVariable { label :: String }
+    -- Denotes a hole
+    | CocSyntaxHole { label :: String }
     -- Can be used in place of an variable if it is unused
     | CocSyntaxUnused
     -- Denotes an application
@@ -28,6 +30,7 @@ instance Show CocSyntax where
     show (CocSyntaxProp) = "*"
     show (CocSyntaxType) = "@"
     show (CocSyntaxVariable label) = label
+    show (CocSyntaxHole label) = label
     show (CocSyntaxUnused) = "_"
     show (CocSyntaxApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
     show (CocSyntaxLambda param inType body) = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
