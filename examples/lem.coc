@@ -1,4 +1,5 @@
 import "Either.coc" { Either left right cases }
+import "pair.coc" { PairOf pair }
 
 define Bot = {\A:*.A};
 
@@ -34,15 +35,14 @@ define AarrowBimpnegAorB =
     ))));
 
 define negequivnegalt =
-(\righttypecheck:{\P:*.(neg P)->(negalt P)}.
- (\lefttypecheck:{\P:*.(negalt P)->(neg P)}.
-  righttypecheck))
+(\negequivnegalt:{\P:*.PairOf ((neg P)->(negalt P)) ((negalt P)->(neg P))}.
+  negequivnegalt)
 (\P:*.
+  pair ((neg P)->(negalt P)) ((negalt P)->(neg P))
  (\negp:(neg P).
   (\Z:*.
    (\p:P.
-    negp p Z))))
-(\P:*.
+    negp p Z)))
  (\negaltp:(negalt P).
   (\p:P.
    (\Z:*.
