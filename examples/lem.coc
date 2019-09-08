@@ -1,4 +1,4 @@
-import "Either.coc" { Either left right }
+import "Either.coc" { Either left right cases }
 
 define Bot = {\A:*.A};
 
@@ -47,3 +47,19 @@ define negequivnegalt =
   (\p:P.
    (\Z:*.
     negaltp Z p))));
+
+define PeirceimpLEM =
+(\peirceimplem:Peirce->LEM.peirceimplem)
+(\peirce:Peirce.
+ (\P:*.
+  peirce (Either P (neg P)) Bot
+  (\eitherimpbot:(Either P (neg P))->Bot.
+   right P (neg P) (\p:P.eitherimpbot (left P (neg P) p)))));
+
+define LEMimpPeirce =
+(\lemimppeirce:LEM->Peirce.lemimppeirce)
+(\lem:LEM.
+ (\A:*.
+  (\B:*.
+   (\aba:(A->B)->A.
+    cases A (neg A) A (lem A) (\a:A.a) (\nega:neg A.aba (\a:A.nega a B))))));
