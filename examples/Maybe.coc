@@ -1,0 +1,21 @@
+import "Either.coc" { cases left right Either }
+
+define Maybe =
+(\A:*.Either A (A->A));
+
+define just =
+(\A:*.
+ (\a:A.
+  left A (A->A) a));
+
+define nothing =
+(\A:*.
+ right A (A->A) (\a:A.a));
+
+define maybecase =
+(\A:*.
+ (\T:*.
+  (\m:Maybe A.
+   (\justcase:A->T.
+    (\nothingcase:T.
+     cases A (A->A) T m justcase (\a:A->A.nothingcase))))));

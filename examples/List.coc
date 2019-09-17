@@ -1,0 +1,60 @@
+import "Maybe.coc" { Maybe just nothing }
+import "equality.coc" { equality reflexivity }
+
+define List =
+(\A:*.
+ {\T:*.
+  T->(A->T->T)->T});
+
+define nil =
+(\A:*.
+ (\nil:List A.nil)
+ (\T:*.
+  (\initial:T.
+   (\op:A->T->T.
+    initial))));
+
+define cons =
+(\A:*.
+ (\x:A.
+  (\xs:List A.
+   (\consxxs:List A.consxxs)
+   (\T:*.
+    (\initial:T.
+     (\op:A->T->T.
+      op x (xs T initial op)))))));
+
+define head =
+(\A:*.
+ (\xs:List A.
+  (\output:Maybe A.output)
+  (xs
+   (Maybe A)
+   (nothing A)
+   (\x:A.
+    (\prev:Maybe A.
+     just A x)))));
+
+define tail =
+(\A:*.
+ (\xs:List A.
+  (\output:Maybe (List A).output)
+  (xs
+   (Maybe (List A))
+   (nothing (List A))
+   (\x:A.
+    (\prev:Maybe (List A).
+     maybecase
+     (List A)
+     (Maybe (List A))
+     prev
+     (\prevlist:List A.
+      just (List A) (cons A x prevlist))
+     (just (List A) (cons A x (nil A))))))));
+
+define headcons =
+(\A:*.
+ (\x:A.
+  (\xs:List A.
+   (\equal:equality (Maybe A) (just A x) (head A (cons A x xs)).equal)
+   (reflexivity (Maybe A) (just A x)))));
