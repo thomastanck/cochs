@@ -51,8 +51,7 @@ define add =
 define mult =
 (\a:Nat.
  (\b:Nat.
-  (\D:*.
-   a D (add b) zero)));
+  a Nat (add b) zero));
 
 define exp =
 (\a:Nat.
@@ -83,7 +82,34 @@ define commutativityaddsuccproof =
 (\p:commutativityaddsucc.p)
 (\a:Nat.
  (\b:Nat.
-   reflexivity Nat (add (succ a) b)));
+   (\stmt:(equality Nat (add (succ a) b) (succ (add a b))).stmt)
+   (reflexivity Nat (add (succ a) b))
+   ));
+
+define inductionaxiom =
+{\P:Nat->*.
+ {\Pzero:P zero.
+  {\Psucc:{\n:Nat.(P n) -> (P (succ n))}.
+   {\n:Nat.
+    P n}}}};
+
+define addLeftNeutral =
+(\n:Nat.
+ (\proof:equality Nat n (add zero n).proof)
+ (reflexivity Nat n));
+
+define addRightNeutral =
+(\induction:inductionaxiom.
+ (\no:Nat.
+  (\proof:equality Nat no (add no zero).proof)
+  (induction
+   (\np:Nat.equality Nat np (add np zero))
+   (reflexivity Nat zero)
+   (\ni:Nat.
+    (\IH:equality Nat ni (add ni zero).
+     IH (\x:Nat.equality Nat (succ ni) (succ x))
+     (reflexivity Nat (succ ni))))
+   no)));
 
 define tests =
 (\exp22:Nat.
