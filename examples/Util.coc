@@ -1,0 +1,2 @@
+define the =
+(\T:*.(\a:T.a));
