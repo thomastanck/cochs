@@ -1,3 +1,5 @@
+import "Util.coc" {the}
+
 define equality =
 (\T:*.
  (\x:T.
