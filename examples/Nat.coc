@@ -52,7 +52,9 @@ define add =
 define mult =
 (\a:Nat.
  (\b:Nat.
-  a Nat (add b) zero));
+  (\D:*.
+   (\f:D->D.
+    a D (b D f)))));
 
 define exp =
 (\a:Nat.
