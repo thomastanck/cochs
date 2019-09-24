@@ -45,18 +45,31 @@ isArrowExpr (CocForall "_" _ _) = True
 isArrowExpr _ = False
 
 instance Show CocExpr where
-    show (CocProp) = "*"
-    show (CocType) = "@"
-    show (CocVariable index label) = label
-    show (CocHole label) = label
-    show (CocApply f a) = "(" ++ (show f) ++ " " ++ (show a) ++ ")"
-    show (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ ")"
-    show (CocForall p t b)
-        = if p == "_"
-            then if isArrowExpr t
-                then "(" ++ (show t) ++ ")->" ++ (show b)
-                else (show t) ++ "->" ++ (show b)
-            else "{\\" ++ p ++ ":" ++ (show t) ++ "." ++ (show b) ++ "}"
+    show x = showhelper 0 x
+        where
+            showhelper ind (CocProp) = "*"
+            showhelper ind (CocType) = "@"
+            showhelper ind (CocVariable index label) = label
+            showhelper ind (CocHole label) = label
+            showhelper ind (CocApply f a) = "(" ++ (if shouldsplit then oneline else unwords) applywords ++ ")"
+                where
+                    applylistr (CocApply f a) b = (b:(applylistr f a))
+                    applylistr f a = [a,f]
+                    applylist = reverse $ applylistr f a
+                    applywords = Prelude.map (showhelper (ind+1)) $ applylist
+                    hasnewline = any (elem '\n') applywords
+                    totallength = Data.List.foldl' (+) 0 (Prelude.map ((+1) . length) applywords)
+                    shouldsplit = hasnewline || totallength > 40
+                    oneline' [str] = (replicate (ind+1) ' ') ++ str
+                    oneline' (s:strs) = (replicate (ind+1) ' ') ++ s ++ '\n' : oneline' strs
+                    oneline (s:strs) = s ++ '\n' : oneline' strs
+            showhelper ind (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (showhelper ind t) ++ ".\n" ++ (replicate (ind+1) ' ') ++ (showhelper (ind+1) b) ++ ")"
+            showhelper ind (CocForall p t b)
+                = if p == "_"
+                    then if isArrowExpr t
+                        then "(" ++ (showhelper (ind+1) t) ++ ")->" ++ (showhelper ind b)
+                        else (showhelper ind t) ++ "->" ++ (showhelper ind b)
+                    else "{\\" ++ p ++ ":" ++ (showhelper ind t) ++ "." ++ (showhelper (ind+1) b) ++ "}"
 
 fromCocDefs :: [CocDefinition] -> Map.Map String CocExpr
 fromCocDefs defs
