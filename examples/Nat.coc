@@ -1,7 +1,7 @@
 import "Util.coc" {the}
 import "pair.coc" {pair head tail}
 import "Bool.coc" {Bool true false}
-import "equality.coc" {equality reflexivity}
+import "equality.coc" {equality reflexivity extensionalityaxiom typeextensionalityaxiom}
 
 // We need to quantify over the domain that we're composing over
 define Nat =
@@ -145,6 +145,34 @@ define addCommutative =
       symmetry Nat (add ai b) (add b ai) IH (\x:Nat.equality Nat (succ x) (add b (succ ai)))
       (addSuccRightSucc induction b ai)))
     a))));
+
+define xismultonex =
+(\ext:extensionalityaxiom.
+ (\text:typeextensionalityaxiom.
+  the {\x:Nat.(equality Nat x (mult one x))}
+  // your answer
+  (\x:Nat.
+   text (\T:*.(T->T)->T->T) x (mult one x)
+   (\T:*.
+    ext (T->T) (\f:T->T.T->T) (x T) (mult one x T)
+    (\f:T->T.
+     ext T (\i:T.T) (x T f) (mult one x T f)
+     (\i:T.
+      reflexivity T (mult one x T f i)))))));
+
+define oneisexpxzero =
+(\ext:extensionalityaxiom.
+ (\text:typeextensionalityaxiom.
+  the {\x:Nat.(equality Nat one (exp x zero))}
+  // your answer
+  (\x:Nat.
+   text (\T:*.(T->T)->T->T) one (exp x zero)
+   (\T:*.
+    ext (T->T) (\f:T->T.T->T) (one T) (exp x zero T)
+    (\f:T->T.
+     ext T (\i:T.T) (one T f) (exp x zero T f)
+     (\i:T.
+      reflexivity T (one T f i)))))));
 
 define tests =
 (\exp22:Nat.
