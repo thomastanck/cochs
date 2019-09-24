@@ -76,11 +76,11 @@ data CocError
 
 instance Show CocError where
     show (CocTypeMismatch expr expectedType gotType)
-        = "Type mismatch in expression: "
+        = "Type mismatch in expression:\n"
         ++ (show expr)
-        ++ "\nExpected type: "
+        ++ "\nExpected type:\n"
         ++ (show expectedType)
-        ++ "\nGot type: "
+        ++ "\nGot type:\n"
         ++ (show gotType)
     show (CocTypeHasNoType)
         = "Tried to obtain type of Type, but Type has no type."
