@@ -102,6 +102,19 @@ define welldefinedness =
 
       (reflexivity B (f a))))))));
 
+define extensionalityaxiom =
+{\A:*.
+ {\B:A->*.
+  {\x:{\a:A.B a}.
+   {\y:{\a:A.B a}.
+    {\a:A.equality (B a) (x a) (y a)}->(equality {\a:A.B a} x y)}}}};
+
+define typeextensionalityaxiom =
+{\B:*->*.
+ {\x:{\A:*.B A}.
+  {\y:{\A:*.B A}.
+   {\A:*.equality (B A) (x A) (y A)}->(equality {\A:*.B A} x y)}}};
+
 define equalitytests =
 (\refl:reflexivityofequality.
 (\sym:symmetryofequality.
