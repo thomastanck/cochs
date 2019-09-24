@@ -1,3 +1,5 @@
+import "equality.coc" { equality reflexivity }
+
 define pair =
 (\A:*.
  (\B:*.
@@ -22,3 +24,26 @@ define tail =
  (\B:*.
   (\p:(PairOf A B).
    p B (\a:A.(\b:B.b)))));
+
+define headpairxyeqx =
+(\A:*.
+ (\B:*.
+  (\a:A.
+   (\b:B.
+    (\typecheck:(equality A (head A B (pair A B a b)) a).typecheck)
+    (reflexivity A (head A B (pair A B a b)))))));
+
+define tailpairxyeqy =
+(\A:*.
+ (\B:*.
+  (\a:A.
+   (\b:B.
+    (\typecheck:(equality B (tail A B (pair A B a b)) b).typecheck)
+    (reflexivity B (tail A B (pair A B a b)))))));
+
+define headpair =
+(\A:*.
+ (\B:*.
+  (\a:A.
+   (\b:B.
+    head A B (pair A B a b)))));
