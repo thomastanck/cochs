@@ -1,3 +1,4 @@
+import "Util.coc" {the}
 import "pair.coc" {pair head tail}
 import "Bool.coc" {Bool true false}
 import "equality.coc" {equality reflexivity}
@@ -82,7 +83,7 @@ define commutativityaddsuccproof =
 (\p:commutativityaddsucc.p)
 (\a:Nat.
  (\b:Nat.
-   (\stmt:(equality Nat (add (succ a) b) (succ (add a b))).stmt)
+   the (equality Nat (add (succ a) b) (succ (add a b)))
    (reflexivity Nat (add (succ a) b))
    ));
 
@@ -95,13 +96,13 @@ define inductionaxiom =
 
 define addLeftNeutral =
 (\n:Nat.
- (\proof:equality Nat n (add zero n).proof)
+ the (equality Nat n (add zero n))
  (reflexivity Nat n));
 
 define addRightNeutral =
 (\induction:inductionaxiom.
  (\no:Nat.
-  (\proof:equality Nat no (add no zero).proof)
+  the (equality Nat no (add no zero))
   (induction
    (\np:Nat.equality Nat np (add np zero))
    (reflexivity Nat zero)
@@ -110,6 +111,40 @@ define addRightNeutral =
      IH (\x:Nat.equality Nat (succ ni) (succ x))
      (reflexivity Nat (succ ni))))
    no)));
+
+define addSuccLeftSucc =
+(\a:Nat.
+ (\b:Nat.
+  the (equality Nat (succ (add a b)) (add (succ a) b))
+  (reflexivity Nat (succ (add a b)))));
+
+define addSuccRightSucc =
+(\induction:inductionaxiom.
+ (\a:Nat.
+  (\b:Nat.
+   the (equality Nat (succ (add a b)) (add a (succ b)))
+   (induction
+    (\ai:Nat.equality Nat (succ (add ai b)) (add ai (succ b)))
+    (reflexivity Nat (succ b))
+    (\ai:Nat.
+     (\IH:equality Nat (succ (add ai b)) (add ai (succ b)).
+      IH (\x:Nat.equality Nat (succ (add (succ ai) b)) (succ x))
+      (reflexivity Nat (succ (add (succ ai) b)))))
+    a))));
+
+define addCommutative =
+(\induction:inductionaxiom.
+ (\a:Nat.
+  (\b:Nat.
+   the (equality Nat (add a b) (add b a))
+   (induction
+    (\ai:Nat.equality Nat (add ai b) (add b ai))
+    (addRightNeutral induction b)
+    (\ai:Nat.
+     (\IH:equality Nat (add ai b) (add b ai).
+      symmetry Nat (add ai b) (add b ai) IH (\x:Nat.equality Nat (succ x) (add b (succ ai)))
+      (addSuccRightSucc induction b ai)))
+    a))));
 
 define tests =
 (\exp22:Nat.
