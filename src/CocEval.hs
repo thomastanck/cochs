@@ -1,5 +1,6 @@
 module CocEval where
 
+import Control.Parallel
 import Safe(atMay)
 
 import CocExpr
@@ -107,8 +108,11 @@ cocType settings ctx expr
             case normfType of
                 (CocForall label inType body)
                     -> do aType <- cocType settings ctx argument
-                          if (cocNorm settings inType) == (cocNorm settings aType)
-                              then Right $ cocNorm settings (cocSubst body 0 argument)
+                          let inTypeNorm = cocNorm settings inType
+                          let aTypeNorm = cocNorm settings aType
+                          let bodyNorm = cocNorm settings (cocSubst body 0 argument)
+                          if bodyNorm `par` inTypeNorm == aTypeNorm
+                              then Right bodyNorm
                               else Left (CocTypeMismatch argument inType aType)
                 _ -> Left (CocNonFunctionApplication function normfType)
         CocLambda label inType body -> do

@@ -25,6 +25,7 @@ dependencies:
 - megaparsec
 - containers
 - safe
+- parallel
 - path
 
 library:
