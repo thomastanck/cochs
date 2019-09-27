@@ -114,7 +114,7 @@ rws = ["Prop", "*", "Type", "@", "_", "define", "=", ";", "->", "import", "as"]
 identifier :: Parser String
 identifier = (lexeme . try) (p >>= check)
   where
-    p       = (:) <$> C.letterChar <*> many C.alphaNumChar
+    p       = (:) <$> C.letterChar <*> many (C.alphaNumChar <|> C.char '_' <|> C.char '\"')
     check x = if x `elem` rws
                 then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                 else return x
@@ -122,7 +122,8 @@ identifier = (lexeme . try) (p >>= check)
 hole_identifier :: Parser String
 hole_identifier = (lexeme . try) (p >>= check)
   where
-    p       = (:) <$> (C.char '?') <*> ((:) <$> C.letterChar <*> many C.alphaNumChar)
+    -- p       = (:) <$> (C.char '?') <*> ((:) <$> C.letterChar <*> many C.alphaNumChar)
+    p       = (:) <$> (C.char '?') <*> ((:) <$> C.letterChar <*> many (C.alphaNumChar <|> C.char '_' <|> C.char '\"'))
     check x = if x `elem` rws
                 then fail $ "keyword " ++ show x ++ " cannot be an hole identifier"
                 else return x

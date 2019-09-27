@@ -73,36 +73,30 @@ define ifzero =
    (\ifnotzero:A.
     n A (\_:A.ifnotzero) ifiszero))));
 
-define commutativityaddsucc =
-{\a:Nat.
- {\b:Nat.
-  (equality Nat (add (succ a) b) (succ (add a b)))}};
-
 define addsuccab = (\a:Nat.(\b:Nat.(add (succ a) b)));
 define succaddab = (\a:Nat.(\b:Nat.(succ (add a b))));
 
-define commutativityaddsuccproof =
-(\p:commutativityaddsucc.p)
+define add_succ_commutative =
 (\a:Nat.
  (\b:Nat.
    the (equality Nat (add (succ a) b) (succ (add a b)))
    (reflexivity Nat (add (succ a) b))
    ));
 
-define inductionaxiom =
+define induction_axiom =
 {\P:Nat->*.
  {\Pzero:P zero.
   {\Psucc:{\n:Nat.(P n) -> (P (succ n))}.
    {\n:Nat.
     P n}}}};
 
-define addLeftNeutral =
+define add_left_neutral =
 (\n:Nat.
  the (equality Nat n (add zero n))
  (reflexivity Nat n));
 
-define addRightNeutral =
-(\induction:inductionaxiom.
+define add_right_neutral =
+(\induction:induction_axiom.
  (\no:Nat.
   the (equality Nat no (add no zero))
   (induction
@@ -114,14 +108,14 @@ define addRightNeutral =
      (reflexivity Nat (succ ni))))
    no)));
 
-define addSuccLeftSucc =
+define add_succ_left_succ =
 (\a:Nat.
  (\b:Nat.
   the (equality Nat (succ (add a b)) (add (succ a) b))
   (reflexivity Nat (succ (add a b)))));
 
-define addSuccRightSucc =
-(\induction:inductionaxiom.
+define add_succ_right_succ =
+(\induction:induction_axiom.
  (\a:Nat.
   (\b:Nat.
    the (equality Nat (succ (add a b)) (add a (succ b)))
@@ -134,21 +128,21 @@ define addSuccRightSucc =
       (reflexivity Nat (succ (add (succ ai) b)))))
     a))));
 
-define addCommutative =
-(\induction:inductionaxiom.
+define add_commutative =
+(\induction:induction_axiom.
  (\a:Nat.
   (\b:Nat.
    the (equality Nat (add a b) (add b a))
    (induction
     (\ai:Nat.equality Nat (add ai b) (add b ai))
-    (addRightNeutral induction b)
+    (add_right_neutral induction b)
     (\ai:Nat.
      (\IH:equality Nat (add ai b) (add b ai).
       symmetry Nat (add ai b) (add b ai) IH (\x:Nat.equality Nat (succ x) (add b (succ ai)))
-      (addSuccRightSucc induction b ai)))
+      (add_succ_right_succ induction b ai)))
     a))));
 
-define xismultonex =
+define x_is_multonex =
 (\ext:extensionalityaxiom.
  (\text:typeextensionalityaxiom.
   the {\x:Nat.(equality Nat x (mult one x))}
@@ -162,7 +156,7 @@ define xismultonex =
      (\i:T.
       reflexivity T (mult one x T f i)))))));
 
-define oneisexpxzero =
+define one_is_expxzero =
 (\ext:extensionalityaxiom.
  (\text:typeextensionalityaxiom.
   the {\x:Nat.(equality Nat one (exp x zero))}
