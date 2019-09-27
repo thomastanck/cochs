@@ -111,7 +111,7 @@ cocType settings ctx expr
                           let inTypeNorm = cocNorm settings inType
                           let aTypeNorm = cocNorm settings aType
                           let bodyNorm = cocNorm settings (cocSubst body 0 argument)
-                          if bodyNorm `par` inTypeNorm == aTypeNorm
+                          if bodyNorm `par` inTypeNorm `par` (aTypeNorm `pseq` inTypeNorm == aTypeNorm)
                               then Right bodyNorm
                               else Left (CocTypeMismatch argument inType aType)
                 _ -> Left (CocNonFunctionApplication function normfType)
