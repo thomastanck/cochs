@@ -24,9 +24,13 @@ symbol = L.symbol sc
 parseCocSyntax :: Parser CocSyntax
 parseCocSyntax = do
     sc
-    (try parseCocSyntaxApply)
-    <|> (try parseCocSyntaxArrowForall)
-    <|> parseCocSyntaxOne
+    first <- parseCocSyntaxOne
+    (try $ parseCocSyntaxApplyRest first)
+        <|> (try $ parseCocSyntaxArrowForallRest first)
+        <|> (return first)
+    -- (try parseCocSyntaxApply)
+    -- <|> (try parseCocSyntaxArrowForall)
+    -- <|> parseCocSyntaxOne
 
 parseCocProgram :: Parser ([CocImport], [CocDefinition])
 parseCocProgram = do
@@ -62,6 +66,11 @@ parseCocSyntaxApply = do
     exprs <- some parseCocSyntaxOne
     return $ foldr (\a b->CocSyntaxApply b a) firstExpr (reverse exprs)
 
+parseCocSyntaxApplyRest :: CocSyntax -> Parser CocSyntax
+parseCocSyntaxApplyRest firstExpr = do
+    exprs <- some parseCocSyntaxOne
+    return $ foldr (\a b->CocSyntaxApply b a) firstExpr (reverse exprs)
+
 parseCocSyntaxLambda :: Parser CocSyntax
 parseCocSyntaxLambda = do
     symbol "(\\"
@@ -87,6 +96,17 @@ parseCocSyntaxForall = do
 parseCocSyntaxArrowForall :: Parser CocSyntax
 parseCocSyntaxArrowForall = do
     in1 <- parseCocSyntaxOne
+    in2 <- optional (symbol ":" >> parseCocSyntaxOne)
+    symbol "->"
+    outtype <- parseCocSyntax
+    case in2 of
+        Just intype ->
+            return $ CocSyntaxForall in1 intype outtype
+        Nothing ->
+            return $ CocSyntaxForall CocSyntaxUnused in1 outtype
+
+parseCocSyntaxArrowForallRest :: CocSyntax -> Parser CocSyntax
+parseCocSyntaxArrowForallRest in1 = do
     in2 <- optional (symbol ":" >> parseCocSyntaxOne)
     symbol "->"
     outtype <- parseCocSyntax
