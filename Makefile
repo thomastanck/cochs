@@ -36,17 +36,17 @@ test: FORCE
 	stack run test 7 tests examples/Nat.coc
 	stack run test 7 iszero examples/Nat.coc
 	stack run test 7 ifzero examples/Nat.coc
-	stack run test 7 commutativityaddsucc examples/Nat.coc
+	stack run test 7 add_succ_commutative examples/Nat.coc
 	stack run test 7 addsuccab examples/Nat.coc
 	stack run test 7 succaddab examples/Nat.coc
-	stack run test 7 inductionaxiom examples/Nat.coc
-	stack run test 7 addLeftNeutral examples/Nat.coc
-	stack run test 7 addRightNeutral examples/Nat.coc
-	stack run test 7 addSuccLeftSucc examples/Nat.coc
-	stack run test 7 addSuccRightSucc examples/Nat.coc
-	stack run test 7 addCommutative examples/Nat.coc
-	stack run test 7 xismultonex examples/Nat.coc
-	stack run test 7 oneisexpxzero examples/Nat.coc
+	stack run test 7 induction_axiom examples/Nat.coc
+	stack run test 7 add_left_neutral examples/Nat.coc
+	stack run test 7 add_right_neutral examples/Nat.coc
+	stack run test 7 add_succ_left_succ examples/Nat.coc
+	stack run test 7 add_succ_right_succ examples/Nat.coc
+	stack run test 7 add_commutative examples/Nat.coc
+	stack run test 7 x_is_multonex examples/Nat.coc
+	stack run test 7 one_is_expxzero examples/Nat.coc
 
 	stack run test 7 main examples/oneequalspredtwo.coc
 
