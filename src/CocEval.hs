@@ -94,8 +94,7 @@ instance Show CocError where
 
 -- Finds the type of an expr in a given context
 cocType :: CocSettings -> CocContext -> CocExpr -> Either CocError CocExpr
-cocType settings ctx expr
-    | CocSettings allowedSorts <- settings
+cocType (settings@(CocSettings allowedSorts)) ctx expr
     = case expr of
         CocProp -> Right CocType
         CocType -> Left CocTypeHasNoType
@@ -111,7 +110,7 @@ cocType settings ctx expr
                           let inTypeNorm = cocNorm settings inType
                           let aTypeNorm = cocNorm settings aType
                           let bodyNorm = cocNorm settings (cocSubst body 0 argument)
-                          if bodyNorm `par` inTypeNorm `par` (aTypeNorm `pseq` inTypeNorm == aTypeNorm)
+                          if (bodyNorm `par` inTypeNorm `par` aTypeNorm) `pseq` inTypeNorm == aTypeNorm
                               then Right bodyNorm
                               else Left (CocTypeMismatch argument inType aType)
                 _ -> Left (CocNonFunctionApplication function normfType)
