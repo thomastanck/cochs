@@ -1,0 +1,177 @@
+import "equality.coc" {}
+import "Either.coc" {}
+
+define andzz_theorem =
+{\T:*.
+  {\z:T. // represents 0
+  {\o:T. // represents 1
+  {\F:T->*. // represents "_ is in B" predicate
+  {\not:T->T. // represents the boolean operators
+  {\and:T->T->T.
+  {\or:T->T->T.
+    {\_:(F z).
+    {\_:(F o).
+    {\_:{\x:T.(F x)->F (not x)}.
+    {\_:{\x:T.{\y:T.(F x)->(F y)->(F (and x y))}}.
+    {\_:{\x:T.{\y:T.(F x)->(F y)->(F (or x y))}}.
+    {\_:{\x:T.(F x)->(Either (equality T x z) (equality T x o))}.
+    {\_:(equality T (not o) z).
+    {\_:(equality T (not z) o).
+    {\_:{\x:T.(F x)->(equality T (and x z) z)}.
+    {\_:{\x:T.(F x)->(equality T (and z x) z)}.
+    {\_:(equality T (and o o) o).
+    {\_:{\x:T.(F x)->(equality T (or x o) o)}.
+    {\_:{\x:T.(F x)->(equality T (or o x) o)}.
+    {\_:(equality T (or z z) z).
+      (equality T (and z z) z)
+    }}}}}}}}}}}}}}
+}}}}}}};
+
+define andzz_proof =
+the andzz_theorem
+(\T:*.
+  (\z:T. // represents 0
+  (\o:T. // represents 1
+  (\F:T->*. // represents "_ is in B" predicate
+  (\not:T->T. // represents the boolean operators
+  (\and:T->T->T.
+  (\or:T->T->T.
+    (\proofz:F z.
+    (\proofo:F o.
+    (\proofnotin:{\x:T.(F x)->F (not x)}.
+    (\proofandin:{\x:T.{\y:T.(F x)->(F y)->(F (and x y))}}.
+    (\prooforin:{\x:T.{\y:T.(F x)->(F y)->(F (or x y))}}.
+    (\prooff:{\x:T.(F x)->Either (equality T x z) (equality T x o)}.
+    (\proofno:equality T (not o) z.
+    (\proofnz:equality T (not z) o.
+    (\proofandxz:{\x:T.(F x)->equality T (and x z) z}.
+    (\proofandzx:{\x:T.(F x)->equality T (and z x) z}.
+    (\proofandoo:equality T (and o o) o.
+    (\prooforxo:{\x:T.(F x)->equality T (or x o) o}.
+    (\prooforox:{\x:T.(F x)->equality T (or o x) o}.
+    (\prooforzz:equality T (or z z) z.
+      proofandxz z proofz
+    ))))))))))))))
+)))))));
+
+define demorgan_theorem =
+{\T:*.
+  {\z:T. // represents 0
+  {\o:T. // represents 1
+  {\F:T->*. // represents "_ is in B" predicate
+  {\not:T->T. // represents the boolean operators
+  {\and:T->T->T.
+  {\or:T->T->T.
+    {\_:(F z).
+    {\_:(F o).
+    {\_:{\x:T.(F x)->F (not x)}.
+    {\_:{\x:T.{\y:T.(F x)->(F y)->(F (and x y))}}.
+    {\_:{\x:T.{\y:T.(F x)->(F y)->(F (or x y))}}.
+    {\_:{\x:T.(F x)->(Either (equality T x z) (equality T x o))}.
+    {\_:(equality T (not o) z).
+    {\_:(equality T (not z) o).
+    {\_:{\x:T.(F x)->(equality T (and x z) z)}.
+    {\_:{\x:T.(F x)->(equality T (and z x) z)}.
+    {\_:(equality T (and o o) o).
+    {\_:{\x:T.(F x)->(equality T (or x o) o)}.
+    {\_:{\x:T.(F x)->(equality T (or o x) o)}.
+    {\_:(equality T (or z z) z).
+      {\a:T.
+      {\b:T.
+      {\ina:F a.
+      {\inb:F b.
+        (equality T (not (and a b)) (or (not a) (not b)))
+      }}}}
+    }}}}}}}}}}}}}}
+}}}}}}};
+
+define demorgan_proof =
+the demorgan_theorem
+(\T:*.
+  (\z:T. // represents 0
+  (\o:T. // represents 1
+  (\F:T->*. // represents "_ is in B" predicate
+  (\not:T->T. // represents the boolean operators
+  (\and:T->T->T.
+  (\or:T->T->T.
+    (\proofz:F z.
+    (\proofo:F o.
+    (\proofnotin:{\x:T.(F x)->F (not x)}.
+    (\proofandin:{\x:T.{\y:T.(F x)->(F y)->(F (and x y))}}.
+    (\prooforin:{\x:T.{\y:T.(F x)->(F y)->(F (or x y))}}.
+    (\prooff:{\x:T.(F x)->Either (equality T x z) (equality T x o)}.
+    (\proofno:equality T (not o) z.
+    (\proofnz:equality T (not z) o.
+    (\proofandxz:{\x:T.(F x)->equality T (and x z) z}.
+    (\proofandzx:{\x:T.(F x)->equality T (and z x) z}.
+    (\proofandoo:equality T (and o o) o.
+    (\prooforxo:{\x:T.(F x)->equality T (or x o) o}.
+    (\prooforox:{\x:T.(F x)->equality T (or o x) o}.
+    (\prooforzz:equality T (or z z) z.
+      (\a:T.
+      (\b:T.
+      (\ina:F a.
+      (\inb:F b.
+        cases
+        (equality T a z)
+        (equality T a o)
+        (equality T (not (and a b)) (or (not a) (not b)))
+        (prooff a ina)
+        (\eqaz:equality T a z.
+          (transitivity T (not (and a b)) o (or (not a) (not b)))
+           (proofnz
+            (\x:T.equality T (not (and a b)) x)
+            (welldefinedness T T not (and a b) z
+             (symmetry T a z eqaz
+              (\x:T.equality T (and x b) z)
+              (proofandzx b inb))))
+           (symmetry T (or (not a) (not b)) o
+            (symmetry T a z eqaz
+             (\x:T.equality T (or (not x) (not b)) o)
+             (symmetry T (not z) o proofnz
+              (\x:T.equality T (or x (not b)) o)
+              (prooforox (not b) (proofnotin b inb))))))
+        (\eqao:equality T a o.
+          cases
+          (equality T b z)
+          (equality T b o)
+          (equality T (not (and a b)) (or (not a) (not b)))
+          (prooff b inb)
+          (\eqbz:equality T b z.
+            (transitivity T (not (and a b)) o (or (not a) (not b))
+             (proofnz
+              (\x:T.equality T (not (and a b)) x)
+              (welldefinedness T T not (and a b) z
+               (symmetry T b z eqbz
+                (\x:T.equality T (and a x) z)
+                (proofandxz a ina))))
+             (symmetry T (or (not a) (not b)) o
+              (symmetry T b z eqbz
+               (\x:T.equality T (or (not a) (not x)) o)
+               (symmetry T (not z) o proofnz
+                (\x:T.equality T (or (not a) x) o)
+                (prooforxo (not a) (proofnotin a ina))))))
+          )
+          (\eqbo:equality T b o.
+            (transitivity T (not (and a b)) z (or (not a) (not b))
+             (proofno
+              (\x:T.equality T (not (and a b)) x)
+              (welldefinedness T T not (and a b) o
+               (symmetry T b o eqbo
+                (\x:T.equality T (and a x) o)
+                (symmetry T a o eqao
+                 (\x:T.equality T (and x o) o)
+                 proofandoo))))
+             (symmetry T (or (not a) (not b)) z
+              (symmetry T b o eqbo
+               (\x:T.equality T (or (not a) (not x)) z)
+               (symmetry T a o eqao
+                (\x:T.equality T (or (not x) (not o)) z)
+                (symmetry T (not o) z proofno
+                 (\x:T.equality T (or x x) z)
+                 prooforzz)))))
+          )
+        )
+      ))))
+    ))))))))))))))
+)))))));
