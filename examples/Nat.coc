@@ -179,3 +179,19 @@ define tests =
 (pred zero)
 (pred one)
 (pred two);
+
+define fact =
+the (Nat -> Nat)
+(\n:Nat.
+ head Nat Nat
+ (n
+  (PairOf Nat Nat)
+  (\p:PairOf Nat Nat.
+   pair Nat Nat (mult (head Nat Nat p) (tail Nat Nat p)) (succ (tail Nat Nat p)))
+  (pair Nat Nat one one)));
+
+define factthree =
+fact three;
+
+define factfive =
+fact five;
