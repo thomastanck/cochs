@@ -1,0 +1,171 @@
+import "equality.coc" {}
+
+define the = 
+(\T:*.(\a:T.a));
+
+// We need to define the binary operator somehow
+// By group axiom 1, binary operator needs to
+// take in 2 elements in the set, and return an element in the set.
+
+define binOpType =
+(\G:*.
+	G -> (G -> G)
+);
+
+// we use welldefinedness to apply functions
+
+// G1 closure is just restating binoptype so is useless
+
+// G2 associativity
+// the bin_op must be associative
+
+define lrAssociPred = // left to right associativity 
+(\G:*.
+	(\B:binOpType G.
+		{\a:G.
+		{\b:G.
+		{\c:G.
+			equality G 
+			(B (B a b) c) 
+			(B a (B b c))
+}}}));
+
+define rlAssociPred = // right to left associativity 
+(\G:*.
+	(\B:binOpType G.
+		{\a:G.
+		{\b:G.
+		{\c:G.
+			equality G 
+			(B a (B b c))
+			(B (B a b) c) 
+}}}));
+
+// G3 identity
+
+define lIdPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\e: G.
+			{\any: G.
+				equality G (B e any) any
+})));
+
+define rIdPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\e: G.
+			{\any: G.
+				equality G (B any e) any
+})));
+
+// Can't be bothered to define both rid and lid every time so here's converting lid to rid
+define rIdIslId =   
+(\G:*.
+	(\B:binOpType G.
+		{\e: G.
+			{\eIsrId: rIdPred G B e.
+				{\any: G.
+					equality G (B e any) any
+}}}));
+
+// G4 inverse
+// Or B a b = e 
+
+define rInvPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\a: G.
+			(\inv: G.
+				rIdPred G B (B a inv)
+))));
+
+define lInvPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\a: G.
+			(\inv: G.
+				rIdPred G B (B inv a)
+))));
+
+// extra
+define abelianPred =
+(\G:*.
+	(\B:binOpType G.
+		{\a: G.
+			{\b: G.
+				equality G (B a b) (B b a)
+}}));
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+import "pair.coc" {}
+
+// G1 closure is just restating binoptype so is useless
+define closureProof = 
+(\G:*.
+	(\B:binOpType G.
+		(\a:G.
+			(\b:G.
+				the G (B a b)
+))));
+
+define associPred = // associativity 
+(\G:*.
+	(\B:binOpType G.
+		PairOf (lrAssociPred G B) (rlAssociPred G B)
+));
+
+define idPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\e: G.
+			pair 
+			(lIdPred G B e) 
+			(rIdPred G B e))));
+
+define idL =
+(\G:*.
+	(\B:binOpType G.
+		(\e: G.
+			(\isId: PairOf (lIdPred G B e) (rIdPred G B e).
+				head 
+				(lIdPred G B e) 
+				(rIdPred G B e)
+				isId
+))));
+
+define idR =
+(\G:*.
+	(\B:binOpType G.
+		(\e: G.
+			(\isId: PairOf (lIdPred G B e) (rIdPred G B e).
+				tail 
+				(lIdPred G B e) 
+				(rIdPred G B e)
+				isId
+))));
+
+define lInv = true;
+define rInv = false;
+
+define invPred = 
+(\G:*.
+	(\B:binOpType G.
+		(\a: G.
+			(\inv: G.
+				{\getLInv: Bool.
+					getLInv G (lInvPred G B a inv) (rInvPred G B a inv)
+				}
+))));
+*/
