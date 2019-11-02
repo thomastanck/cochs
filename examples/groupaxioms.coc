@@ -9,7 +9,7 @@ define the =
 
 define binOpType =
 (\G:*.
-	G -> (G -> G)
+  G -> (G -> G)
 );
 
 // we use welldefinedness to apply functions
@@ -21,52 +21,52 @@ define binOpType =
 
 define lrAssociPred = // left to right associativity
 (\G:*.
-	(\B:binOpType G.
-		{\a:G.
-		{\b:G.
-		{\c:G.
-			equality G
-			(B (B a b) c)
-			(B a (B b c))
+  (\B:binOpType G.
+    {\a:G.
+    {\b:G.
+    {\c:G.
+      equality G
+      (B (B a b) c)
+      (B a (B b c))
 }}}));
 
 define rlAssociPred = // right to left associativity
 (\G:*.
-	(\B:binOpType G.
-		{\a:G.
-		{\b:G.
-		{\c:G.
-			equality G
-			(B a (B b c))
-			(B (B a b) c)
+  (\B:binOpType G.
+    {\a:G.
+    {\b:G.
+    {\c:G.
+      equality G
+      (B a (B b c))
+      (B (B a b) c)
 }}}));
 
 // G3 identity
 
 define lIdPred =
 (\G:*.
-	(\B:binOpType G.
-		(\e: G.
-			{\any: G.
-				equality G (B e any) any
+  (\B:binOpType G.
+    (\e: G.
+      {\any: G.
+        equality G (B e any) any
 })));
 
 define rIdPred =
 (\G:*.
-	(\B:binOpType G.
-		(\e: G.
-			{\any: G.
-				equality G (B any e) any
+  (\B:binOpType G.
+    (\e: G.
+      {\any: G.
+        equality G (B any e) any
 })));
 
 // Can't be bothered to define both rid and lid every time so here's converting lid to rid
 define rIdIslId =
 (\G:*.
-	(\B:binOpType G.
-		{\e: G.
-			{\eIsrId: rIdPred G B e.
-				{\any: G.
-					equality G (B e any) any
+  (\B:binOpType G.
+    {\e: G.
+      {\eIsrId: rIdPred G B e.
+        {\any: G.
+          equality G (B e any) any
 }}}));
 
 // G4 inverse
@@ -74,25 +74,25 @@ define rIdIslId =
 
 define rInvPred =
 (\G:*.
-	(\B:binOpType G.
-		(\a: G.
-			(\inv: G.
-				rIdPred G B (B a inv)
+  (\B:binOpType G.
+    (\a: G.
+      (\inv: G.
+        rIdPred G B (B a inv)
 ))));
 
 define lInvPred =
 (\G:*.
-	(\B:binOpType G.
-		(\a: G.
-			(\inv: G.
-				rIdPred G B (B inv a)
+  (\B:binOpType G.
+    (\a: G.
+      (\inv: G.
+        rIdPred G B (B inv a)
 ))));
 
 // extra
 define abelianPred =
 (\G:*.
-	(\B:binOpType G.
-		{\a: G.
-			{\b: G.
-				equality G (B a b) (B b a)
+  (\B:binOpType G.
+    {\a: G.
+      {\b: G.
+        equality G (B a b) (B b a)
 }}));
