@@ -1,6 +1,6 @@
 import "equality.coc" {}
 
-define the = 
+define the =
 (\T:*.(\a:T.a));
 
 // We need to define the binary operator somehow
@@ -19,31 +19,31 @@ define binOpType =
 // G2 associativity
 // the bin_op must be associative
 
-define lrAssociPred = // left to right associativity 
+define lrAssociPred = // left to right associativity
 (\G:*.
 	(\B:binOpType G.
 		{\a:G.
 		{\b:G.
 		{\c:G.
-			equality G 
-			(B (B a b) c) 
+			equality G
+			(B (B a b) c)
 			(B a (B b c))
 }}}));
 
-define rlAssociPred = // right to left associativity 
+define rlAssociPred = // right to left associativity
 (\G:*.
 	(\B:binOpType G.
 		{\a:G.
 		{\b:G.
 		{\c:G.
-			equality G 
+			equality G
 			(B a (B b c))
-			(B (B a b) c) 
+			(B (B a b) c)
 }}}));
 
 // G3 identity
 
-define lIdPred = 
+define lIdPred =
 (\G:*.
 	(\B:binOpType G.
 		(\e: G.
@@ -51,7 +51,7 @@ define lIdPred =
 				equality G (B e any) any
 })));
 
-define rIdPred = 
+define rIdPred =
 (\G:*.
 	(\B:binOpType G.
 		(\e: G.
@@ -60,7 +60,7 @@ define rIdPred =
 })));
 
 // Can't be bothered to define both rid and lid every time so here's converting lid to rid
-define rIdIslId =   
+define rIdIslId =
 (\G:*.
 	(\B:binOpType G.
 		{\e: G.
@@ -70,9 +70,9 @@ define rIdIslId =
 }}}));
 
 // G4 inverse
-// Or B a b = e 
+// Or B a b = e
 
-define rInvPred = 
+define rInvPred =
 (\G:*.
 	(\B:binOpType G.
 		(\a: G.
@@ -80,7 +80,7 @@ define rInvPred =
 				rIdPred G B (B a inv)
 ))));
 
-define lInvPred = 
+define lInvPred =
 (\G:*.
 	(\B:binOpType G.
 		(\a: G.
@@ -96,4 +96,3 @@ define abelianPred =
 			{\b: G.
 				equality G (B a b) (B b a)
 }}));
-
