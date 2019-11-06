@@ -1,10 +1,20 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 module CocExpr where
 
-import Data.List(elemIndex, foldl')
+import Control.Monad.Reader.Class
+import Control.Monad.Writer.Class
+
+import Data.Foldable
+import Data.Functor (void)
+import Data.List (elemIndex)
 import Data.Maybe(fromMaybe)
-import Data.Map.Strict as Map
+import qualified Data.Map.Strict as Map
+import Data.Monoid
+import Data.String (fromString)
 
 import CocSyntax
+import Utils
 
 type CocType = CocExpr
 data CocExpr =
@@ -45,31 +55,50 @@ isArrowExpr (CocForall "_" _ _) = True
 isArrowExpr _ = False
 
 instance Show CocExpr where
-    show x = showhelper 0 x
-        where
-            showhelper ind (CocProp) = "*"
-            showhelper ind (CocType) = "@"
-            showhelper ind (CocVariable index label) = label
-            showhelper ind (CocHole label) = label
-            showhelper ind (CocApply f a) = "(" ++ (if shouldsplit then oneline else unwords) applywords ++ ")"
-                where
-                    applylistr (CocApply f a) b = (b:(applylistr f a))
-                    applylistr f a = [a,f]
-                    applylist = reverse $ applylistr f a
-                    applywords = Prelude.map (showhelper (ind+1)) $ applylist
-                    hasnewline = any (elem '\n') applywords
-                    totallength = Data.List.foldl' (+) 0 (Prelude.map ((+1) . length) applywords)
-                    shouldsplit = hasnewline || totallength > 40
-                    oneline' [str] = (replicate (ind+1) ' ') ++ str
-                    oneline' (s:strs) = (replicate (ind+1) ' ') ++ s ++ '\n' : oneline' strs
-                    oneline (s:strs) = s ++ '\n' : oneline' strs
-            showhelper ind (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (showhelper ind t) ++ ".\n" ++ (replicate (ind+1) ' ') ++ (showhelper (ind+1) b) ++ ")"
-            showhelper ind (CocForall p t b)
-                = if p == "_"
-                    then if isArrowExpr t
-                        then "(" ++ (showhelper (ind+1) t) ++ ")->" ++ (showhelper ind b)
-                        else (showhelper ind t) ++ "->" ++ (showhelper ind b)
-                    else "{\\" ++ p ++ ":" ++ (showhelper ind t) ++ "." ++ (showhelper (ind+1) b) ++ "}"
+    showsPrec prec x = let (_,(str,nl,l)) = evalIndent (showHelper x) in appEndo str
+        where showMultiline :: [IndentData] -> IndentM ()
+              showMultiline [a] = tell a
+              showMultiline (a:as) = showMultiline as *> indentedNewLine *> tell a
+
+              -- TODO: We always try both prints. Is there a way to only switch when needed?
+              -- Probably run a EitherT inside.
+              showApplications :: CocExpr -> IndentM [IndentData]
+              showApplications (CocApply f a) = pass $ do
+                -- Spy on single-line print
+                (chunked, (_, Any newlines, Sum charCount)) <- listen $ do
+                    revArgs <- showApplications f
+                    appChar ' '
+                    (_, curArg) <- listen (showHelper a)
+                    return $ curArg : revArgs
+                -- Capture and silence multi-line print
+                (_, chunkedWrite) <- censor (const mempty) $ listen $ showMultiline chunked
+                -- Pick appropriate output
+                let outFunc = if newlines || charCount > 40
+                    then const chunkedWrite
+                    else id 
+                return (chunked, outFunc)
+              showApplications t = listen (showHelper t) >>= (\(_, x) -> return [x])
+
+              showHelper :: CocExpr -> IndentM ()
+              showHelper = \case
+                CocProp -> "*"
+                CocType -> "@"
+                CocVariable index label -> fromString label
+                CocHole label -> fromString label
+                app@(CocApply f a) -> "(" <> void (withIndent $ showApplications app) <> ")"
+                CocLambda p t b ->
+                    "(\\" <> fromString p <> ":"
+                        <> showHelper t <> "."
+                        <> withIndent (indentedNewLine <> showHelper b)
+                        <> ")"
+                CocForall p t b -> case (p, isArrowExpr t) of
+                    ("_", True) -> "(" <> withIndent (showHelper t) <> ")->" <> showHelper b
+                    ("_", False) -> showHelper t <> "->" <> showHelper b
+                    _ -> "{\\" <> fromString p <> ":"
+                        <> showHelper t <> "."
+                        <> withIndent (showHelper b)
+                        <> "}"
+
 
 fromCocDefs :: [CocDefinition] -> Map.Map String CocExpr
 fromCocDefs defs
