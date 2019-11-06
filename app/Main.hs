@@ -9,6 +9,7 @@ import System.Exit
 import Data.Map.Strict as Map
 import Data.Maybe
 import Path
+import Control.Monad.Reader
 
 import CocExpr
 import CocEval
@@ -58,8 +59,8 @@ evalcmd systemType defname filename = do
                     let defmap = fromCocDefs defs
                     let expr = fromJust $ Map.lookup defname defmap
                     let settings = systemNumToSettings systemNum
-                    let val = cocNorm settings expr
-                    let typ = cocType settings [] expr
+                    let val = runReader (cocNorm expr) settings
+                    let typ = cocType settings expr
                     case typ of
                         Left err -> do
                             putStrLn $ show expr
@@ -93,8 +94,8 @@ testcmd systemType defname filename = do
                     let defmap = fromCocDefs defs
                     let expr = fromJust $ Map.lookup defname defmap
                     let settings = systemNumToSettings systemNum
-                    let val = cocNorm settings expr
-                    let typ = cocType settings [] expr
+                    let val = runReader (cocNorm expr) settings
+                    let typ = cocType settings expr
                     case typ of
                         Left err -> do
                             putStrLn $ show expr
@@ -125,8 +126,8 @@ testfailcmd systemType defname filename = do
                     let defmap = fromCocDefs defs
                     let expr = fromJust $ Map.lookup defname defmap
                     let settings = systemNumToSettings systemNum
-                    let val = cocNorm settings expr
-                    let typ = cocType settings [] expr
+                    let val = runReader (cocNorm expr) settings
+                    let typ = cocType settings expr
                     case typ of
                         Left err -> do
                             exitSuccess
@@ -157,8 +158,8 @@ findtypecmd systemType defname filename = do
                     let defmap = fromCocDefs defs
                     let expr = fromJust $ Map.lookup defname defmap
                     let settings = systemNumToSettings systemNum
-                    let val = cocNorm settings expr
-                    let typ = cocType settings [] expr
+                    let val = runReader (cocNorm expr) settings
+                    let typ = cocType settings expr
                     case typ of
                         Left err -> do
                             putStrLn $ show expr
