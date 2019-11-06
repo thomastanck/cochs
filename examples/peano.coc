@@ -1,0 +1,80 @@
+import "lem.coc" {neg}
+import "equality.coc" {equality}
+import "Util.coc" {the}
+
+// think pi-types as either for-all or implication
+// think currying as and, if not dependent
+
+// We proof that one is a natural number by its definition:
+// the successor of zero is a natural number.
+define oneIsNat =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    isnat (succ z)}}}}}}}}}};
+
+define proofThatOneIsNat =
+the oneIsNat
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    succisnat z zeroisnat))))))))));
+
+
+define fourIsNotEqualZero =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    neg (equality T z (succ (succ (succ (succ z)))))}}}}}}}}}};
+
+define proofThatFourIsNotEqualZero =
+the fourIsNotEqualZero
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    zeronotsucc (succ(succ(succ z)))
+     (succisnat (succ (succ z))
+      (succisnat (succ z)
+       (succisnat z zeroisnat)
+     ))))))))))));
+
