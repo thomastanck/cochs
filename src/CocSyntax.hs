@@ -1,6 +1,7 @@
 module CocSyntax where
 
 import Data.List.Split(splitOn)
+import Data.List
 
 data CocSyntax =
     -- Type of types
@@ -27,28 +28,35 @@ isArrowSyntax (CocSyntaxForall CocSyntaxUnused _ _) = True
 isArrowSyntax _ = False
 
 instance Show CocSyntax where
-    show (CocSyntaxProp) = "*"
-    show (CocSyntaxType) = "@"
-    show (CocSyntaxVariable label) = label
-    show (CocSyntaxHole label) = label
-    show (CocSyntaxUnused) = "_"
-    show (CocSyntaxApply function argument) = "(" ++ (show function) ++ " " ++ (show argument) ++ ")"
-    show (CocSyntaxLambda param inType body) = "(\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ ")"
-    show (CocSyntaxForall param inType body)
-        = if param == CocSyntaxUnused
-            then if isArrowSyntax inType
-                then "(" ++ (show inType) ++ ")->" ++ (show body)
-                else (show inType) ++ "->" ++ (show body)
-            else "{\\" ++ (show param) ++ ":" ++ (show inType) ++ "." ++ (show body) ++ "}"
+    showsPrec prec val = case val of
+        CocSyntaxProp -> ('*':)
+        CocSyntaxType -> ('@':)
+        CocSyntaxVariable label -> (label ++)
+        CocSyntaxHole label -> (label ++)
+        CocSyntaxUnused -> ('_':)
+        CocSyntaxApply function argument -> ('(':) . shows function . (' ':) . shows argument . ('(':)
+        CocSyntaxLambda param inType body -> ("(\\" ++) . shows param . (':':) . shows inType . ('.':) . shows body . (')':)
+        CocSyntaxForall param inType body ->
+            if param == CocSyntaxUnused
+                then if isArrowSyntax inType
+                    then ('(':) . shows inType . (")->" ++) . shows body
+                    else shows inType . ("->" ++) . shows body
+                else ("{\\" ++) . shows param . (":" ++)
+                        . shows inType . ('.':)
+                        . shows body . ('}':)
+        where shows = showsPrec prec
+
 
 -- Creates a definition binding
 data CocDefinition = CocDefinition { defname :: String, expr :: CocSyntax }
     deriving Eq
 
 instance Show CocDefinition where
-    show (CocDefinition defname expr) = "define " ++ defname ++ " = " ++ (show expr)
+    show (CocDefinition defname expr) = "define " ++ defname ++ " = " ++ show expr
 
 data CocImport = CocImport { packagename :: String, defnamemap :: [(String, String)] }
 
 instance Show CocImport where
-    show (CocImport packagename defnamemap) = "import " ++ (show packagename) ++ "{" ++ (foldl1 (\a b-> a ++ " " ++ b) (map (\(a,b)->if a == b then a else a ++ " as " ++ b) defnamemap)) ++ "}"
+    show (CocImport packagename defnamemap) = "import " ++ packagename ++ "{" ++ unwords defnames ++ "}"
+        where defnames = map defname defnamemap
+              defname (a,b) = if a == b then a else a ++ " as " ++ b

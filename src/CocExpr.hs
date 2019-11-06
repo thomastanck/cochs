@@ -1,10 +1,24 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module CocExpr where
 
-import Data.List(elemIndex, foldl')
+import Control.Monad.Except
+import Control.Monad.Reader
+import Control.Monad.Writer
+
+import Data.Foldable
+import Data.Functor (void)
+import Data.List (elemIndex)
 import Data.Maybe(fromMaybe)
-import Data.Map.Strict as Map
+import qualified Data.Map.Strict as Map
+import Data.Monoid
+import Data.String (fromString)
 
 import CocSyntax
+import Utils
 
 type CocType = CocExpr
 data CocExpr =
@@ -44,72 +58,115 @@ instance Eq CocExpr where
 isArrowExpr (CocForall "_" _ _) = True
 isArrowExpr _ = False
 
+
 instance Show CocExpr where
-    show x = showhelper 0 x
-        where
-            showhelper ind (CocProp) = "*"
-            showhelper ind (CocType) = "@"
-            showhelper ind (CocVariable index label) = label
-            showhelper ind (CocHole label) = label
-            showhelper ind (CocApply f a) = "(" ++ (if shouldsplit then oneline else unwords) applywords ++ ")"
-                where
-                    applylistr (CocApply f a) b = (b:(applylistr f a))
-                    applylistr f a = [a,f]
-                    applylist = reverse $ applylistr f a
-                    applywords = Prelude.map (showhelper (ind+1)) $ applylist
-                    hasnewline = any (elem '\n') applywords
-                    totallength = Data.List.foldl' (+) 0 (Prelude.map ((+1) . length) applywords)
-                    shouldsplit = hasnewline || totallength > 40
-                    oneline' [str] = (replicate (ind+1) ' ') ++ str
-                    oneline' (s:strs) = (replicate (ind+1) ' ') ++ s ++ '\n' : oneline' strs
-                    oneline (s:strs) = s ++ '\n' : oneline' strs
-            showhelper ind (CocLambda p t b) = "(\\" ++ p ++ ":" ++ (showhelper ind t) ++ ".\n" ++ (replicate (ind+1) ' ') ++ (showhelper (ind+1) b) ++ ")"
-            showhelper ind (CocForall p t b)
-                = if p == "_"
-                    then if isArrowExpr t
-                        then "(" ++ (showhelper (ind+1) t) ++ ")->" ++ (showhelper ind b)
-                        else (showhelper ind t) ++ "->" ++ (showhelper ind b)
-                    else "{\\" ++ p ++ ":" ++ (showhelper ind t) ++ "." ++ (showhelper (ind+1) b) ++ "}"
+    showsPrec prec x = let (_,(str,nl,l)) = evalIndent (showHelper x) in appEndo str
+        where showMultiline :: [IndentData] -> IndentM ()
+              showMultiline [a] = tell a
+              showMultiline (a:as) = showMultiline as *> indentedNewLine *> tell a
+
+              -- TODO: We always try both prints. Is there a way to only switch when needed?
+              -- Probably run a EitherT inside.
+              showApplications :: CocExpr -> IndentM [IndentData]
+              showApplications (CocApply f a) = pass $ do
+                -- Spy on single-line print
+                (chunked, (_, Any newlines, Sum charCount)) <- listen $ do
+                    revArgs <- showApplications f
+                    appChar ' '
+                    (_, curArg) <- listen (showHelper a)
+                    return $ curArg : revArgs
+                -- Capture and silence multi-line print
+                (_, chunkedWrite) <- censor (const mempty) $ listen $ showMultiline chunked
+                -- Pick appropriate output
+                let outFunc = if newlines || charCount > 40
+                    then const chunkedWrite
+                    else id 
+                return (chunked, outFunc)
+              showApplications t = listen (showHelper t) >>= (\(_, x) -> return [x])
+
+              showHelper :: CocExpr -> IndentM ()
+              showHelper = \case
+                CocProp -> "*"
+                CocType -> "@"
+                CocVariable index label -> fromString label
+                CocHole label -> fromString label
+                app@(CocApply f a) -> "(" <> void (withIndent $ showApplications app) <> ")"
+                CocLambda p t b ->
+                    "(\\" <> fromString p <> ":"
+                        <> showHelper t <> "."
+                        <> withIndent (indentedNewLine <> showHelper b)
+                        <> ")"
+                CocForall p t b -> case (p, isArrowExpr t) of
+                    ("_", True) -> "(" <> withIndent (showHelper t) <> ")->"
+                        <> showHelper b
+                    ("_", False) -> showHelper t <> "->" <> showHelper b
+                    _ -> "{\\" <> fromString p <> ":"
+                        <> showHelper t <> "."
+                        <> withIndent (showHelper b)
+                        <> "}"
+
 
 fromCocDefs :: [CocDefinition] -> Map.Map String CocExpr
 fromCocDefs defs
-    = Data.List.foldl' f Map.empty defs
+    = foldl' f Map.empty defs
     where f defmap (CocDefinition defname expr)
-            = insert defname (fromCocSyntax defmap expr) defmap
+            = Map.insert defname (fromCocSyntax defmap expr) defmap
 
+data Scope = MkScope {
+    defMap :: Map.Map String CocExpr,
+    labelMap :: Map.Map String Int,
+    depth :: Int
+    } deriving (Show)
+
+newtype ScopedM a = MkScopedM {
+    runScoped :: ReaderT Scope (Except String) a
+    } deriving newtype (Functor, Applicative, Monad,
+        MonadReader Scope, MonadError String)
+
+withCaptured :: String -> ScopedM a -> ScopedM a
+withCaptured label = local $ \MkScope{..} -> MkScope defMap (Map.insert label (depth + 1) labelMap) $ depth + 1
+
+withUnused :: ScopedM a -> ScopedM a
+withUnused = local $ \MkScope{..} -> MkScope defMap labelMap $ depth + 1
+
+lookupDef :: String -> ScopedM CocExpr
+lookupDef label = asks (Map.lookup label . defMap) >>= \case
+    Just expr -> return expr
+    Nothing -> throwError $ "Error when parsing " ++ label
+                    ++ ": variable not bound"
+
+lookupVar :: String -> ScopedM Int
+lookupVar label = asks (Map.lookup label . labelMap) >>= \case
+    Just varDepth -> subtract varDepth <$> asks depth
+    Nothing -> throwError $ "Error when parsing " ++ label
+                    ++ ": variable not bound"
+
+-- TODO: Throw error in app monad, when app monad is implemented
 fromCocSyntax :: Map.Map String CocExpr -> CocSyntax -> CocExpr
-fromCocSyntax defmap syntax = fromCocSyntax' defmap [] syntax
+fromCocSyntax defmap expr = case runExcept $ runReaderT (runScoped $ fromCocM expr) env of
+    Left err -> error err
+    Right val -> val
+    where env = MkScope defmap Map.empty 0
 
-fromCocSyntax' :: Map.Map String CocExpr -> [String] -> CocSyntax -> CocExpr
-fromCocSyntax' defmap labels syntax = case syntax of
-    (CocSyntaxProp)
-        -> CocProp
-    (CocSyntaxType)
-        -> CocType
-    (CocSyntaxVariable label)
-        -> case elemIndex label labels of
-            Just i -> CocVariable i label
-            Nothing -> case Map.lookup label defmap of
-                Just expr -> expr
-                Nothing -> error ("Error when parsing " ++ label ++ ": variable not bound")
-    (CocSyntaxHole label)
-        -> CocHole label
-    (CocSyntaxUnused)
-        -> error ("Error when parsing _: Unused variable cannot appear in the bodies of expressions")
-    (CocSyntaxApply function argument)
-        -> CocApply (fromCocSyntax' defmap labels function) (fromCocSyntax' defmap labels argument)
-    (CocSyntaxLambda (CocSyntaxVariable label) inType body)
-        -> CocLambda label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
-    (CocSyntaxLambda (CocSyntaxUnused) inType body)
-        -> CocLambda "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
-    (CocSyntaxLambda other inType body)
-        -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in lambda")
-    (CocSyntaxForall (CocSyntaxVariable label) inType body)
-        -> CocForall label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
-    (CocSyntaxForall (CocSyntaxUnused) inType body)
-        -> CocForall "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
-    (CocSyntaxForall other inType body)
-        -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in forall")
+fromCocM :: CocSyntax -> ScopedM CocExpr
+fromCocM = \case
+    CocSyntaxUnused -> throwError "Error when parsing _: Unused variable cannot appear in the bodies of expressions"
+    CocSyntaxProp -> return CocProp
+    CocSyntaxType -> return CocType
+    CocSyntaxVariable label -> (CocVariable <$> lookupVar label <*> pure label)
+        `catchError` const (lookupDef label)
+    CocSyntaxHole label -> return $ CocHole label
+    CocSyntaxApply func arg -> CocApply <$> fromCocM func <*> fromCocM arg
+    CocSyntaxLambda{..} -> abstract CocLambda "lambda" param inType body
+    CocSyntaxForall{..} -> abstract CocForall "forall" param inType body
+    where abstract ctor name param inType body = case param of
+            CocSyntaxVariable capture -> ctor capture
+                <$> fromCocM inType <*> withCaptured capture (fromCocM body)
+            CocSyntaxUnused -> ctor "_"
+                <$> fromCocM inType <*> withUnused (fromCocM body)
+            other -> throwError $ "Error when parsing " ++ show other
+                        ++ ": invalid variable in" ++ name
+
 
 asCocProp expr     | CocProp         <- expr = Just expr
 asCocProp _                                  = Nothing
