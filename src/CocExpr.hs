@@ -1,9 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module CocExpr where
 
-import Control.Monad.Reader.Class
-import Control.Monad.Writer.Class
+import Control.Monad.Except
+import Control.Monad.Reader
+import Control.Monad.Writer
 
 import Data.Foldable
 import Data.Functor (void)
@@ -54,6 +58,7 @@ instance Eq CocExpr where
 isArrowExpr (CocForall "_" _ _) = True
 isArrowExpr _ = False
 
+
 instance Show CocExpr where
     showsPrec prec x = let (_,(str,nl,l)) = evalIndent (showHelper x) in appEndo str
         where showMultiline :: [IndentData] -> IndentM ()
@@ -92,7 +97,8 @@ instance Show CocExpr where
                         <> withIndent (indentedNewLine <> showHelper b)
                         <> ")"
                 CocForall p t b -> case (p, isArrowExpr t) of
-                    ("_", True) -> "(" <> withIndent (showHelper t) <> ")->" <> showHelper b
+                    ("_", True) -> "(" <> withIndent (showHelper t) <> ")->"
+                        <> showHelper b
                     ("_", False) -> showHelper t <> "->" <> showHelper b
                     _ -> "{\\" <> fromString p <> ":"
                         <> showHelper t <> "."
@@ -102,43 +108,65 @@ instance Show CocExpr where
 
 fromCocDefs :: [CocDefinition] -> Map.Map String CocExpr
 fromCocDefs defs
-    = Data.List.foldl' f Map.empty defs
+    = foldl' f Map.empty defs
     where f defmap (CocDefinition defname expr)
-            = insert defname (fromCocSyntax defmap expr) defmap
+            = Map.insert defname (fromCocSyntax defmap expr) defmap
 
+data Scope = MkScope {
+    defMap :: Map.Map String CocExpr,
+    labelMap :: Map.Map String Int,
+    depth :: Int
+    } deriving (Show)
+
+newtype ScopedM a = MkScopedM {
+    runScoped :: ReaderT Scope (Except String) a
+    } deriving newtype (Functor, Applicative, Monad,
+        MonadReader Scope, MonadError String)
+
+withCaptured :: String -> ScopedM a -> ScopedM a
+withCaptured label = local $ \MkScope{..} -> MkScope defMap (Map.insert label (depth + 1) labelMap) $ depth + 1
+
+withUnused :: ScopedM a -> ScopedM a
+withUnused = local $ \MkScope{..} -> MkScope defMap labelMap $ depth + 1
+
+lookupDef :: String -> ScopedM CocExpr
+lookupDef label = asks (Map.lookup label . defMap) >>= \case
+    Just expr -> return expr
+    Nothing -> throwError $ "Error when parsing " ++ label
+                    ++ ": variable not bound"
+
+lookupVar :: String -> ScopedM Int
+lookupVar label = asks (Map.lookup label . labelMap) >>= \case
+    Just varDepth -> subtract varDepth <$> asks depth
+    Nothing -> throwError $ "Error when parsing " ++ label
+                    ++ ": variable not bound"
+
+-- TODO: Throw error in app monad, when app monad is implemented
 fromCocSyntax :: Map.Map String CocExpr -> CocSyntax -> CocExpr
-fromCocSyntax defmap syntax = fromCocSyntax' defmap [] syntax
+fromCocSyntax defmap expr = case runExcept $ runReaderT (runScoped $ fromCocM expr) env of
+    Left err -> error err
+    Right val -> val
+    where env = MkScope defmap Map.empty 0
 
-fromCocSyntax' :: Map.Map String CocExpr -> [String] -> CocSyntax -> CocExpr
-fromCocSyntax' defmap labels syntax = case syntax of
-    (CocSyntaxProp)
-        -> CocProp
-    (CocSyntaxType)
-        -> CocType
-    (CocSyntaxVariable label)
-        -> case elemIndex label labels of
-            Just i -> CocVariable i label
-            Nothing -> case Map.lookup label defmap of
-                Just expr -> expr
-                Nothing -> error ("Error when parsing " ++ label ++ ": variable not bound")
-    (CocSyntaxHole label)
-        -> CocHole label
-    (CocSyntaxUnused)
-        -> error ("Error when parsing _: Unused variable cannot appear in the bodies of expressions")
-    (CocSyntaxApply function argument)
-        -> CocApply (fromCocSyntax' defmap labels function) (fromCocSyntax' defmap labels argument)
-    (CocSyntaxLambda (CocSyntaxVariable label) inType body)
-        -> CocLambda label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
-    (CocSyntaxLambda (CocSyntaxUnused) inType body)
-        -> CocLambda "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
-    (CocSyntaxLambda other inType body)
-        -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in lambda")
-    (CocSyntaxForall (CocSyntaxVariable label) inType body)
-        -> CocForall label (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap (label:labels) body)
-    (CocSyntaxForall (CocSyntaxUnused) inType body)
-        -> CocForall "_" (fromCocSyntax' defmap labels inType) (fromCocSyntax' defmap ("_":labels) body)
-    (CocSyntaxForall other inType body)
-        -> error ("Error when parsing " ++ (show other) ++ ": invalid variable in forall")
+fromCocM :: CocSyntax -> ScopedM CocExpr
+fromCocM = \case
+    CocSyntaxUnused -> throwError "Error when parsing _: Unused variable cannot appear in the bodies of expressions"
+    CocSyntaxProp -> return CocProp
+    CocSyntaxType -> return CocType
+    CocSyntaxVariable label -> (CocVariable <$> lookupVar label <*> pure label)
+        `catchError` const (lookupDef label)
+    CocSyntaxHole label -> return $ CocHole label
+    CocSyntaxApply func arg -> CocApply <$> fromCocM func <*> fromCocM arg
+    CocSyntaxLambda{..} -> abstract CocLambda "lambda" param inType body
+    CocSyntaxForall{..} -> abstract CocForall "forall" param inType body
+    where abstract ctor name param inType body = case param of
+            CocSyntaxVariable capture -> ctor capture
+                <$> fromCocM inType <*> withCaptured capture (fromCocM body)
+            CocSyntaxUnused -> ctor "_"
+                <$> fromCocM inType <*> withUnused (fromCocM body)
+            other -> throwError $ "Error when parsing " ++ show other
+                        ++ ": invalid variable in" ++ name
+
 
 asCocProp expr     | CocProp         <- expr = Just expr
 asCocProp _                                  = Nothing
