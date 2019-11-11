@@ -27,6 +27,7 @@ dependencies:
 - safe
 - parallel
 - path
+- mtl
 
 library:
   source-dirs: src

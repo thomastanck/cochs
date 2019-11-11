@@ -1,0 +1,321 @@
+import "equality.coc" {}
+import "groupaxioms.coc" {}
+
+// if lId and rId exists, id is unique?
+define uniqueId =
+{\G:*.
+  {\B:binOpType G.
+    {\a: G.
+    {\b: G.
+    {\aIslId: lIdPred G B a.
+    {\bIsrId: rIdPred G B b.
+      equality G a b
+}}}}}};
+
+define uniqueIdProof =
+the uniqueId
+(\G:*.
+  (\B: binOpType G.
+    (\a: G.
+    (\b: G.
+    (\aIslId: lIdPred G B a.
+    (\bIsrId: rIdPred G B b.
+      transitivity G
+      a (B a b) b
+      (symmetry G (B a b) a (bIsrId a))
+      (aIslId b)
+))))));
+
+// prove a = (a^-1)^-1
+define aisainvinv =
+{\G:*.
+  {\B:binOpType G.
+    {\a: G.
+    {\ai: G.
+    {\aii: G.
+    {\aiIsarInv: rInvPred G B a ai.
+    {\aiiIsairInv: rInvPred G B ai aii.
+    {\lId: rIdIslId G B.
+    {\rlassoci: rlAssociPred G B.
+      equality G a aii
+}}}}}}}}};
+
+// a = a(ai aii)
+// = (a ai) aii
+// = aii
+
+define aisainvinvProof =
+the aisainvinv
+(\G:*.
+  (\B: binOpType G.
+    (\a: G.
+    (\ai: G.
+    (\aii: G.
+    (\aiIsarInv: rInvPred G B a ai.
+    (\aiiIsairInv: rInvPred G B ai aii.
+    (\lId: rIdIslId G B.
+    (\rlassoci: rlAssociPred G B.
+      transitivity G
+      a
+      (B a (B ai aii))
+      aii
+      (symmetry G
+        (B a (B ai aii)) a
+        (aiiIsairInv a))
+
+      (transitivity G
+      (B a (B ai aii))
+      (B (B a ai) aii)
+      aii
+      (rlassoci a ai aii)
+
+      (lId (B a ai) aiIsarInv aii)
+      )
+)))))))));
+
+
+// prove right inv = left inv
+// or that a * b = e and c * a = e
+// => b = c
+
+define rightInvIsLeftInv =
+{\G:*.
+  {\B:binOpType G.
+    {\a: G.
+    {\b: G.
+    {\c: G.
+    {\bIsrInv: rInvPred G B a b.
+    {\cIslInv: lInvPred G B a c.
+    {\associ: lrAssociPred G B.
+    {\lId: rIdIslId G B.
+      equality G b c
+}}}}}}}}};
+
+// b = (ca)b
+// = c(ab)
+// = c
+
+define rightInvIsLeftInvProof =
+the rightInvIsLeftInv
+(\G:*.
+  (\B: binOpType G.
+    (\a: G.
+    (\b: G.
+    (\c: G.
+    (\bIsrInv: rInvPred G B a b.
+    (\cIslInv: lInvPred G B a c.
+    (\associ: lrAssociPred G B.
+    (\lId: rIdIslId G B.
+      transitivity G
+      b
+      (B (B c a) b)
+      c
+      (symmetry G (B (B c a) b) b (lId (B c a) cIslInv b))
+
+      (transitivity G
+      (B (B c a) b)
+      (B c (B a b))
+      c
+      (associ c a b)
+
+      (bIsrInv c)
+      )
+)))))))));
+
+// (ab)inv = binv ainv
+define abInvEqbInvaInv =
+{\G:*.
+  {\B:binOpType G.
+    {\a: G.
+    {\b: G.
+    {\x: G. // ax = e
+    {\y: G. // by = e
+    {\c: G. // c(ab) = e
+    {\xIsalInv: lInvPred G B a x.
+    {\yIsblInv: lInvPred G B b y.
+    {\cIsablInv: rInvPred G B (B a b) c.
+    {\lId: rIdIslId G B.
+    {\lrassoci: lrAssociPred G B.
+    {\rlassoci: rlAssociPred G B.
+      equality G c (B y x)
+}}}}}}}}}}}}};
+
+// c = ((y b) c)
+// = (y ((x a) b)) c
+// = (y (x (a b))) c
+// = ((y x) (a b)) c
+// = (y x) ((a b) c)
+// = y x
+
+define abInvEqbInvaInvProof =
+the abInvEqbInvaInv
+(\G:*.
+  (\B:binOpType G.
+    (\a: G.
+    (\b: G.
+    (\x: G.
+    (\y: G.
+    (\c: G.
+    (\xIsalInv: lInvPred G B a x.
+    (\yIsblInv: lInvPred G B b y.
+    (\cIsabrInv: rInvPred G B (B a b) c.
+    (\lId: rIdIslId G B.
+    (\lrassoci: lrAssociPred G B.
+    (\rlassoci: rlAssociPred G B.
+      transitivity G
+      c
+      (B (B y b) c)
+      (B y x)
+      (symmetry G (B (B y b) c) c (lId (B y b) yIsblInv c))
+
+      (transitivity G
+      (B (B y b) c)
+      (B y (B b c))
+      (B y x)
+      (lrassoci y b c)
+
+      (transitivity G
+      (B y (B b c))
+      (B y (B (B (B x a) b) c))
+      (B y x)
+      (welldefinedness G G
+        (\g:G.B y (B g c))
+        b
+        (B (B x a) b)
+        (symmetry G (B (B x a) b) b (lId (B x a) xIsalInv b))
+      )   // y(bc) = (y(((xa)b)c))
+
+      (transitivity G
+      (B y (B (B (B x a) b) c))
+      (B y (B (B x (B a b)) c))
+      (B y x)
+      (welldefinedness G G
+        (\g:G.B y (B g c))
+        (B (B x a) b)
+        (B x (B a b))
+        (lrassoci x a b)
+      )   // y(((xa)b)c) = y((x(ab))c)
+
+      (transitivity G
+      (B y (B (B x (B a b)) c))
+      (B y (B x (B (B a b) c)))
+      (B y x)
+      (welldefinedness G G
+        (\g:G.B y g)
+        (B (B x (B a b)) c)
+        (B x (B (B a b) c))
+        (lrassoci x (B a b) c)
+      )   // y((x(ab))c) = y(x((ab)c))
+
+      (welldefinedness G G
+        (\g:G.B y g)
+        (B x (B (B a b) c))
+        x
+        (cIsabrInv x)
+      )   // y(x((ab)c)) = yx
+)))))))))))))))));
+
+// ma2202 T3Q4
+// (Qn 2.44 in [R].) If (G,∗) is a group in which x^2=e for all x∈G,
+// prove that (G,∗) is abelian
+
+define orderTwoPred =
+(\G:*.
+(\B:binOpType G.
+  {\a: G.
+    rIdPred G B (B a a)
+}));
+
+define orderTwoImpliesAbelian =
+{\G:*.
+  {\B:binOpType G.
+    {\a: G.
+    {\b: G.
+    {\orderTwo: orderTwoPred G B.
+    {\lrassoci: lrAssociPred G B.
+    {\rlassoci: rlAssociPred G B.
+    {\lId: rIdIslId G B.
+      equality G (B a b) (B b a)
+}}}}}}}};
+
+// ab = (a((ab)(ab)))b
+// = ((a(ab))(ab))b
+// = (((aa)b)(ab))b
+// = (b(ab))b
+// = b((ab)b)
+// = b(a(bb))
+// = ba
+
+define orderTwoImpliesAbelianProof =
+the orderTwoImpliesAbelian
+(\G:*.
+  (\B:binOpType G.
+    (\a: G.
+    (\b: G.
+    (\orderTwo: orderTwoPred G B.
+    (\lrassoci: lrAssociPred G B.
+    (\rlassoci: rlAssociPred G B.
+    (\lId: rIdIslId G B.
+      transitivity G
+      (B a b)
+      (B (B a (B (B a b) (B a b))) b)
+      (B b a)
+      (welldefinedness G G
+        (\g:G.B g b)
+        a
+        (B a (B (B a b) (B a b)))
+        (symmetry G (B a (B (B a b) (B a b))) a  ((orderTwo (B a b)) a))
+      )
+
+      (transitivity G
+      (B (B a (B (B a b) (B a b))) b)
+      (B (B (B a (B a b)) (B a b)) b)
+      (B b a)
+      (welldefinedness G G
+        (\g:G.B g b)
+         (B a (B (B a b) (B a b)))
+        (B (B a (B a b)) (B a b))
+        (rlassoci a (B a b) (B a b))
+      )
+
+      (transitivity G
+      (B (B (B a (B a b)) (B a b)) b)
+      (B (B (B (B a a) b) (B a b)) b)
+      (B b a)
+      (welldefinedness G G
+        (\g:G.(B (B g (B a b)) b))
+        (B a (B a b))
+        (B (B a a) b)
+        (rlassoci a a b)
+      )
+
+      (transitivity G
+      (B (B (B (B a a) b) (B a b)) b)
+      (B (B b (B a b)) b)
+      (B b a)
+      (welldefinedness G G
+        (\g:G.(B (B g (B a b)) b))
+        (B (B a a) b)
+        b
+        (lId (B a a) (orderTwo a) b)
+      )
+
+      (transitivity G
+      (B (B b (B a b)) b)
+      (B (B (B b a) b) b)
+      (B b a)
+      (welldefinedness G G
+        (\g:G.B g b)
+        (B b (B a b))
+        (B (B b a) b)
+        (rlassoci b a b)
+      )
+
+      (transitivity G
+      (B (B (B b a) b) b)
+      (B (B b a) (B b b))
+      (B b a)
+      (lrassoci (B b a) b b)
+
+      (orderTwo b (B b a))
+)))))))))))));

@@ -79,6 +79,12 @@ test: FORCE
 	stack run test 7 PeirceimpLEM examples/lem.coc
 	stack run test 7 LEMimpPeirce examples/lem.coc
 
+	stack run test 7 uniqueIdProof examples/groups.coc
+	stack run test 7 aisainvinvProof examples/groups.coc
+	stack run test 7 rightInvIsLeftInvProof examples/groups.coc
+	stack run test 7 abInvEqbInvaInvProof examples/groups.coc
+	stack run test 7 orderTwoImpliesAbelianProof examples/groups.coc
+
 	stack run testfail 7 break examples/break.coc
 	stack run testfail 7 break2 examples/break.coc
 
