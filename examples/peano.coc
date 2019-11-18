@@ -1,0 +1,407 @@
+import "lem.coc" {}
+import "equality.coc" {}
+import "Util.coc" {}
+
+// think pi-types as either for-all or implication
+// think currying as and, if not dependent
+
+// Proposition 2.1.4
+// We proof that three is a natural number by its definition:
+// the successor of zero is a natural number.
+define threeIsNat =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+// zero, the isnat predicate, and the succ function
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+ // axioms: 2.1, 2.2, 2.3, 2.4, 2.5
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    isnat (succ (succ (succ z)))}}}}}}}}}};
+
+define proofThatThreeIsNat =
+the threeIsNat
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    succisnat (succ (succ z))
+     (succisnat (succ z)
+      (succisnat z zeroisnat))))))))))));
+
+
+// Proposition 2.1.6
+define fourIsNotEqualZero =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    neg (equality T (succ (succ (succ (succ z)))) z)}}}}}}}}}}};
+
+define proofThatFourIsNotEqualZero =
+the fourIsNotEqualZero
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    succnotzero (succ(succ(succ z)))
+     (succisnat (succ (succ z))
+      (succisnat (succ z)
+       (succisnat z zeroisnat)
+     )))))))))))));
+
+/* define negSymmetry = */
+/* (\T:*.(\a:T.(\b:T. */
+/*  (\proofThatAEqB:equality T a b. */
+/*  (neg (equality T a b)) -> (neg (equality T b a)))))); */
+
+// Proposition 2.1.8
+define sixIsNotEqualTwo =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    neg (equality T
+     (succ (succ (succ (succ (succ (succ z))))))
+     (succ (succ z)))}}}}}}}}}}};
+
+define proofThatSixIsNotEqualTwo =
+the sixIsNotEqualTwo
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\s:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+      (\sixeqtwo:equality T (s(s(s(s(s(s z)))))) (s(s z)).
+
+     )))))))))));
+
+/*
+define proofThatSixIsNotEqualTwo =
+the sixIsNotEqualTwo
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+  // we need this assumption to proof by contradiction.
+  (\assumeSixEqualsTwo: equality T (succ (succ (succ (succ (succ (succ z)))))) (succ (succ z)).
+    succequalthenequal (succ (succ (succ (succ z)))) z
+    // proof that 4 is nat
+    (succisnat (succ (succ (succ z)))
+    (succisnat (succ (succ z))
+    (succisnat (succ z)
+    (succisnat z zeroisnat))))
+    // proof that 0 is nat
+    zeroisnat
+        // this is the proof that 5=1
+        (succequalthenequal
+            (succ (succ (succ (succ (succ z)))))
+            (succ z)
+        // prove that 5 is nat
+             (succisnat (succ (succ (succ (succ z))))
+              (succisnat (succ (succ (succ z)))
+               (succisnat (succ (succ z))
+                (succisnat (succ z)
+                 (succisnat z zeroisnat)))))
+        // prove that 1 is nat
+            (succisnat z zeroisnat)
+        // assume 6=2, we will have 5=1
+            assumeSixEqualsTwo)
+    // when we reach here, we will have 4=0
+    ))))))))))));
+    */
+
+
+// Proposition 2.1.11
+// verification of induction.
+// given P(0), P(k)->P(k+1)
+define natInduction =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+ {\anynat:T.
+ {\prop:T->*.
+ {\pzero: prop z.
+ {\pindstep: {\n:T. (isnat n) -> (prop n) -> (prop (succ n))}.
+ {\anynatisnat: isnat anynat.
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    prop anynat
+    }}}}}}}}}}}}}}}};
+
+define proofNatInduction =
+the natInduction
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+ (\anynat:T.
+ (\prop:T->*.
+ (\pzero: prop z.
+ (\pindstep: {\n:T. (isnat n) -> (prop n) -> (prop (succ n))}.
+ (\anynatisnat: isnat anynat.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    induction anynat anynatisnat prop pzero pindstep
+    ))))))))))))))));
+
+/* // Proposition 2.1.15 */
+/* // given functions a and f, a natural number c = (a zero) */
+/* // a defined as a (succ n) = f (a n) for all nat n */
+/* // given x, y, k all naturals, */
+/* // we want to show: */
+/* // neg ((equality T (a k) x) -> (equality T (a k) y)) */
+/* define recursiveDefn = */
+/* {\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}. */
+/* {\T:*. */
+/*  {\z:T. */
+/*  {\isnat:T->*. */
+/*  {\succ:T->T. */
+/*   // axioms */
+/*   {\zeroisnat:isnat z. */
+/*   {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}. */
+/*   {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}. */
+/*   {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}. */
+/*   {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) -> */
+/*                                     (equality T (succ n) (succ m)) -> */
+/*                                     (equality T n m)}}. */
+/*   {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) -> */
+/*                     {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}. */
+/*   {\n:T.{\nisnat:isnat n. */
+/*   {\f:{\n:T.(isnat n) -> {\x:T.(isnat x) -> T}}. */
+/*   {\foutputsnats:{\n:T.{\nn:isnat n.{\x:T.{\xn:isnat x.isnat (f n nn x xn)}}}}. */
+/*   {\c:T.{\nisnat:isnat c. */
+/*     neg ((equality T (a k) x) -> (equality T (a k) y)) */
+/*     }}}}}}}}}}}}}}}}}}}}}}}}; */
+
+// TODO
+// not proved because idk about prove by contradiction
+/*
+define proofRecursiveDefn =
+the recursiveDefn
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+ (\f:T->T.{\a:T->T.
+ (\c:T.(\cisnat:isnat c.(\basecase:equality T (a z) c.
+ (\generalcase: {\n:T.(isnat n)->(equality T (a (succ n)) (f (a n)))}.
+ (\x:T.(\xisnat:isnat T.
+ (\y:T.(\yisnat:isnat T.
+ (\xnoteqy:neg (equality T x y).
+ (\k:T.(\kisnat:isnat T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    )))))))))))))))))))))));
+*/
+
+
+// Definition 2.2.1 - proof that addtion of 2 nats result in nat
+define sumIsNat =
+{\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+{\T:*.
+ {\z:T.
+ {\isnat:T->*.
+ {\succ:T->T.
+ {\add:T->T->T.
+ {\addzero: {\n:T.(isnat n) -> (equality T (add z n) n)}.
+ {\addgeneral: {\n:T.{\m:T.(isnat n)->(isnat m)
+                ->(equality T (add (succ n) m) (succ (add n m)))}}.
+ // proof specific
+ {\x:T.{\xisnat:isnat x.{\y:T.{\yisnat:isnat y.
+  // axioms
+  {\zeroisnat:isnat z.
+  {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  {\induction: {\P:T -> *. (P z) -> {\k:T.(isnat k) -> (P k) -> (P (succ k))}
+                    -> {\n:T.(isnat n) -> P n}}.
+    (\x:T.isnat (add x y)) x
+    }}}}}}}}}}}}}}}}}};
+
+define proofSumIsNat =
+the sumIsNat
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+ (\add:T->T->T.
+ (\addzero: {\n:T.(isnat n) -> (equality T (add z n) n)}.
+ (\addgeneral: {\n:T.{\m:T.(isnat n)->(isnat m)
+                ->(equality T (add (succ n) m) (succ (add n m)))}}.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\P:T -> *. (P z) -> {\k:T.(isnat k) -> (P k) -> (P (succ k))}
+                    -> {\n:T.(isnat n) -> P n}}.
+ // proof specific
+ (\x:T.(\xisnat:isnat x.(\y:T.(\yisnat:isnat y.
+    induction (\x:T.isnat (add x y))
+    // a proof that (addyisnat z)
+    // base case
+    ((symmetry T (add z y) y (addzero y yisnat)) isnat yisnat)
+    // a proof that forall nat k (addyisnat k) -> (addyisnat (succ k))
+    // ind step
+    (\k:T.(\kisnat:isnat k.(\pk:isnat (add k y).
+        // n is k, m is y
+        (the (equality T (succ (add k y)) (add (succ k) y))
+        (symmetry T (add (succ k) y) (succ (add k y))
+            (addgeneral k y kisnat yisnat)))
+        isnat
+        (the (isnat (succ (add k y)))
+            (succisnat (add k y) pk))
+        )))
+    // inductive step done
+    x xisnat
+    ))))))))))))))))));
+
+/* // Lemma 2.2.2 */
+/* // given 0 + n = n, show n + 0 = n */
+/* define sumIsNat = */
+/* {\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}. */
+/* {\T:*. */
+/*  {\z:T. */
+/*  {\isnat:T->*. */
+/*  {\succ:T->T. */
+/*  {\add:T->T->T. */
+/*  {\addzero: {\n:T.(isnat n) -> (equality T (add z n) n)}. */
+/*  {\addgeneral: {\n:T.{\m:T.(isnat n)->(isnat m) */
+/*                 ->(equality T (add (succ n) m) (succ (add n m)))}}. */
+/*  // proof specific */
+/*  {\n:T.{\nisnat:isnat n. */
+/*   // axioms */
+/*   {\zeroisnat:isnat z. */
+/*   {\succisnat: {\n:T.(isnat n) -> isnat (succ n)}. */
+/*   {\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}. */
+/*   {\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}. */
+/*   {\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) -> */
+/*                                     (equality T (succ n) (succ m)) -> */
+/*                                     (equality T n m)}}. */
+/*   {\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) -> */
+/*                     {\k:T.(isnat k) -> (P k) -> (P (succ k))} -> P n}}. */
+/*     isnat (add x y) */
+/*     }}}}}}}}}}}}}}}}}}; */
+
+/*
+define proofSumIsNat =
+the sumIsNat
+(\em: {\A:*.{\B:*.(A->B)->(({\C:*.A->C})->B)->B}}.
+(\T:*.
+ (\z:T.
+ (\isnat:T->*.
+ (\succ:T->T.
+ (\add:T->T->T.
+ (\addzero: {\n:T.(isnat n) -> (equality T (add z n) n)}.
+ (\addgeneral: {\n:T.{\m:T.(isnat n)->(isnat m)
+                ->(equality T (add (succ n) m) (succ (add n m)))}}.
+ // proof specific
+ (\x:T.(\xisnat:isnat T.(\y:T.(\yisnat:isnat T.
+  (\zeroisnat:isnat z.
+  (\succisnat: {\n:T.(isnat n) -> isnat (succ n)}.
+  (\zeronotsucc: {\n:T.(isnat n) -> neg (equality T z (succ n))}.
+  (\succnotzero: {\n:T.(isnat n) -> neg (equality T (succ n) z)}.
+  (\succequalthenequal: {\n:T.{\m:T.(isnat n) -> (isnat m) ->
+                                    (equality T (succ n) (succ m)) ->
+                                    (equality T n m)}}.
+  (\induction: {\n:T.(isnat n) -> {\P:T -> *. (P z) ->
+                    {\k: T. (isnat k) -> (P k) -> (P (succ k))} -> P n}}.
+    ))))))))))))))))));
+*/
